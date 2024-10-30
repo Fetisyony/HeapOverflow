@@ -1,0 +1,13 @@
+.w-80 {
+    width: 80% !important;
+}
+
+.description-textarea {
+    height: 200px;
+}
+
+.error-message {
+    visibility: visible;
+    display: block;
+    font-size: 10px
+}

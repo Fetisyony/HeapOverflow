@@ -1,0 +1,128 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../static/css/navbar.css" rel="stylesheet">
+    <link href="../static/css/right-side.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+                <a class="navbar-brand" href="./index.html">AskPumpkin</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <form class="d-flex navbar-form" role="search">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                    <a href="./ask.html" class="btn btn-outline-success" type="submit">Ask a question</a>
+                </form>
+
+                <a href="./profile.html" style="text-decoration: none;">
+                    <div class="d-flex align-items-center profile-container" role="button">
+                        <img src="../static/img/Avatar.jpg" alt="Profile Image" class="profile-image">
+
+                        <div class="ms-3">
+                            <span class="fw-bold text-dark" style="text-decoration: none;">Mr Igor</span>
+                            <br>
+                            <a class="text-decoration-none text-muted small">log out</a>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <main class="container mt-3">
+        <div class="row">
+            <div class="col-9">
+
+            </div>
+            <div class="col d-flex flex-column gap-2">
+                <section class="mb-3">
+                    <div class="d-flex flex-column gap-2">
+                        <h3>Popular tags</h3>
+                        <div>
+                            <a href="./tag/bootstrap.html"><span class="badge tag-search-link">python</span></a>
+                            <a href="./tag/bootstrap.html"><span class="badge tag-search-link">ruby</span></a>
+                            <a href="./tag/bootstrap.html"><span class="badge tag-search-link">linux</span></a>
+                            <a href="./tag/bootstrap.html"><span class="badge tag-search-link">kotlin</span></a>
+                            <a href="./tag/bootstrap.html"><span class="badge tag-search-link">arch</span></a>
+                            <a href="./tag/bootstrap.html"><span class="badge tag-search-link">c++</span></a>
+                            <a href="./tag/bootstrap.html"><span class="badge tag-search-link">android</span></a>
+                            <a href="./tag/bootstrap.html"><span class="badge tag-search-link">ios</span></a>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h3>Best members</h3>
+                    <div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">№</th>
+                                    <th scope="col">Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">1</th>
+                                    <td>
+                                        <li class="list-group-item list-group-item-action"><a href="#"
+                                                class="best-member-item">Ryan Gosling</a>
+                                        </li>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">2</th>
+                                    <td>
+                                        <li class="list-group-item list-group-item-action"><a href="#"
+                                                class="best-member-item">Carrey
+                                                Mulligan</a></li>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">3</th>
+                                    <td>
+                                        <li class="list-group-item list-group-item-action"><a href="#"
+                                                class="best-member-item">Oscar Isaac</a>
+                                        </li>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">4</th>
+                                    <td>
+                                        <li class="list-group-item list-group-item-action"><a href="#"
+                                                class="best-member-item">Albert Brooks</a>
+                                        </li>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">5</th>
+                                    <td>
+                                        <li class="list-group-item list-group-item-action"><a href="#"
+                                                class="best-member-item">Christina
+                                                Hendricks</a></li>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script src="../static/js/bootstrap.min.js"></script>
+</body>
+
+</html>
