@@ -18,7 +18,7 @@ USERS_DATABASE = [
     },
     {
         "name" : "Carrey Mulligan",
-        "avatar" : "img/Avatar.jpg",
+        "avatar" : "img/AnswerProfile1.jpg",
     },
     {
         "name" : "Christina Hendricks",
@@ -171,3 +171,4 @@ QUESTIONS = [
 
 POPULAR_TAGS = ["python", "ruby", "linux", "kotlin", "arch", "c++", "android", "ios"]
 TOP_USER_ID = [0, 1, 2]
+TOP_USER_LIST = [USERS_DATABASE[i] for i in TOP_USER_ID]
