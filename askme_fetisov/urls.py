@@ -1,6 +1,4 @@
 """
-URL configuration for askme_fetisov project.
-
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
 Examples:
@@ -15,21 +13,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from app import views
+from django.urls import path, include
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('', views.index, name='index'),
-    path('settings/', views.settings, name='settings'),
-    path('ask/', views.ask_question, name="ask"),
-    path('register/', views.register, name="register"),
-    path('login/', views.login, name="login"),
-    path('hot/', views.hot, name="hot"),
-    path('question/<int:question_id>', views.question, name="question"),
-    path('tag/<tag_name>', views.tag, name="tag"),
-
-    path('<str:wrong_url>', views.wrong_url, name="wrong_url")
+    path('', include('app.urls')),
 ]

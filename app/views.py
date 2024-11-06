@@ -1,5 +1,4 @@
 from django.core.paginator import Paginator
-from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from app.data import QUESTIONS, POPULAR_TAGS, TOP_USER_LIST
@@ -80,17 +79,6 @@ def question(request, question_id):
         template_name="question.html",
         context={
             'question': QUESTIONS[question_id],
-            'popular_tags': POPULAR_TAGS,
-            'top_users': TOP_USER_LIST
-        }
-    )
-
-def wrong_url(request, wrong_url):
-    return render(
-        request,
-        template_name="wrong_url.html",
-        status=404,
-        context={
             'popular_tags': POPULAR_TAGS,
             'top_users': TOP_USER_LIST
         }
