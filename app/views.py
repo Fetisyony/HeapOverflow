@@ -6,23 +6,23 @@ from app.data import QUESTIONS, POPULAR_TAGS, TOP_USER_LIST
 
 
 def paginate(objects_list, request, per_page=4):
-    pageNumber = int(request.GET.get('page', 1))
+    page_number = int(request.GET.get('page', 1))
     paginator = Paginator(objects_list, per_page)
 
-    if pageNumber < 1:
-        pageNumber = 1
-        return None, pageNumber
-    elif pageNumber > paginator.num_pages:
-        pageNumber = paginator.num_pages
-        return None, pageNumber
+    if page_number < 1:
+        page_number = 1
+        return None, page_number
+    elif page_number > paginator.num_pages:
+        page_number = paginator.num_pages
+        return None, page_number
 
-    page = paginator.get_page(pageNumber)
-    return page, pageNumber
+    page = paginator.get_page(page_number)
+    return page, page_number
 
 def index(request):
-    page, pageNumber = paginate(QUESTIONS, request, per_page=4)
+    page, page_number = paginate(QUESTIONS, request, per_page=4)
     if (page is None):
-        return redirect(f"/?page={pageNumber}")
+        return redirect(f"/?page={page_number}")
 
     return render(
         request,
@@ -37,9 +37,9 @@ def index(request):
     )
 
 def hot(request):
-    page, pageNumber = paginate(QUESTIONS, request, per_page=4)
+    page, page_number = paginate(QUESTIONS, request, per_page=4)
     if (page is None):
-        return redirect(f"/?page={pageNumber}")
+        return redirect(f"/?page={page_number}")
 
     return render(
         request,
@@ -107,9 +107,9 @@ def ask_question(request):
     )
 
 def tag(request, tag_name):
-    page, pageNumber = paginate(QUESTIONS, request, per_page=4)
+    page, page_number = paginate(QUESTIONS, request, per_page=4)
     if (page is None):
-        return redirect(f"/?page={pageNumber}")
+        return redirect(f"/?page={page_number}")
 
     return render(
         request,
