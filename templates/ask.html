@@ -1,0 +1,55 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block tab_title %}
+    AskPumpkin: ask
+{% endblock %}
+{% block extra_css %}
+    <link href="{% static 'css/ask.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block page_content_title %}
+    New Question
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex flex-column gap-3 mb-3 w-80">
+        <div>
+            <div class="col-3 input-group mb-3">
+                <div class="w-100">
+                    <h6>Title</h6>
+                    <input type="text" class="form-control" placeholder="e.g. How to center div?"
+                        aria-label="Title" aria-describedby="basic-addon1">
+                    <div class="invalid-feedback error-message" id="passwordFeedback">
+                        Title too long. Maximum length: 100 symbols
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <div class="w-100">
+                    <h6>Description</h6>
+                    <textarea class="form-control description-textarea" placeholder="Detailed description"
+                        aria-label="Description"></textarea>
+                    <div class="invalid-feedback error-message" id="passwordFeedback">
+                        Your question is bad!
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <div class="w-100">
+                    <h6>Tags</h6>
+                    <input type="text" class="form-control" placeholder="e.g. django" aria-label="Tags">
+                    <div class="invalid-feedback error-message" id="passwordFeedback">
+                        Incorrect tag: Windows
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- button here -->
+    <div class="d-flex justify-content-start">
+        <button type="button" class="btn btn-primary">Submit</button>
+    </div>
+{% endblock %}

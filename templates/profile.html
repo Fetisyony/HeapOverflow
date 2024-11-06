@@ -1,0 +1,67 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block tab_title %}
+    AskPumpkin: profile
+{% endblock %}
+{% block extra_css %}
+    <link href="{% static 'css/profile.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block page_content_title %}
+    Settings: Mr Igor
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex flex-column gap-4 mb-4">
+        <div class="row d-flex-row align-items-baseline">
+            <div class="col-2">
+                <h6>Login</h6>
+            </div>
+            <div class="col-5">
+                <input type="text" class="form-control" placeholder="Enter text here" />
+            </div>
+        </div>
+        <div class="row d-flex-row align-items-baseline">
+            <div class="col-2">
+                <h6>Email</h6>
+            </div>
+            <div class="col-5">
+                <input type="text" class="form-control" placeholder="Enter text here" />
+            </div>
+        </div>
+        <div class="row d-flex-row align-items-baseline">
+            <div class="col-2">
+                <h6>Nickname</h6>
+            </div>
+            <div class="col-5">
+                <input type="text" class="form-control" placeholder="Enter text here" />
+            </div>
+        </div>
+        <div class="row d-flex-row align-items-center">
+            <div class="col-2">
+                <h6>Upload avatar</h6>
+            </div>
+            <div class="col-5">
+                <div class="d-flex flex-row align-items-center">
+                    <img src="{% static 'img/Avatar.jpg' %}" alt="upload Avatar" id="img"
+                        class="rounded-circle img-thumbnail profile-image-upload mb-2 me-3" />
+                    <div id="fileInputWrapper">
+                        <button type="button" class="btn btn-outline-secondary">
+                            Choose file
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- button to save -->
+    <div class="row d-flex-row align-items-baseline">
+        <div class="col-2">
+        </div>
+        <div class="col-5">
+            <button type="button" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+
+{% endblock %}
