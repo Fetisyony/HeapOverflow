@@ -34,17 +34,8 @@
                     <a href="{% url 'ask' %}" class="btn btn-outline-success" type="submit">Ask a question</a>
                 </form>
 
-                <a href="{% url 'profile' %}" style="text-decoration: none;">
-                    <div class="d-flex align-items-center profile-container" role="button">
-                        <img src="{% static 'img/Avatar.jpg' %}" alt="Profile Image" class="profile-image">
-
-                        <div class="ms-3">
-                            <span class="fw-bold text-dark" style="text-decoration: none;">Mr Igor</span>
-                            <br>
-                            <a class="text-decoration-none text-muted small">log out</a>
-                        </div>
-                    </div>
-                </a>
+                {% block user_corner %}
+                {% endblock %}
             </div>
         </div>
     </nav>

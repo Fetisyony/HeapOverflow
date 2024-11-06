@@ -8,7 +8,7 @@
             <div class="d-flex col-2 align-items-center">
                 <div
                     class="d-flex flex-column gap-2 justify-content-center mb-2 align-items-center">
-                    <img src="{% static 'img/AnswerProfile1.jpg' %}" alt="Avatar"
+                <img src="{% static question.author.avatar %}" alt="Avatar"
                         class="img-fluid question_profile_image">
                     <input class="form-control" type="number" placeholder="0"
                         aria-label="default input example">
@@ -22,8 +22,8 @@
                 </h5>
                 <h6 class="card-subtitle mb-2 text-body-secondary mt-2">{{ question.text }}</h6>
 
-                <div class="d-flex gap-5 mt-auto mb-1">
-                    <a href="{% url 'question' question.id %}" class="card-link">Answers (3)</a>
+                <div class="d-flex gap-4 mt-auto mb-1">
+                    <a href="{% url 'question' question.id %}" class="card-link text-decoration-none">Answers (3)</a>
                     <div class="d-flex flex-row">
                         <div class="text me-3">Tags:</div>
 

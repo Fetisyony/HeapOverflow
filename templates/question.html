@@ -1,4 +1,4 @@
-{% extends 'layouts/base.html' %}
+{% extends 'layouts/base_login.html' %}
 {% load static %}
 
 {% block tab_title %}
@@ -7,7 +7,7 @@
 
 {% block extra_css %}
     <link href="{% static 'css/question.css' %}" rel="stylesheet">
-    <link href="{% static 'css/all.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 {% endblock %}
 
 {% block page_content_title %}
@@ -183,7 +183,7 @@
         </div>
     </div>
     <!-- create input field -->
-    <div class="d-flex flex-column gap-3">
+    <div class="d-flex flex-column gap-3 mb-5">
         <div class="row">
             <div class="col-1 d-flex justify-content-center flex-column">
 
