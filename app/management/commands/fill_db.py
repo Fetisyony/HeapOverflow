@@ -1,13 +1,15 @@
-import random
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.db import transaction
 from app.models import Question, Answer, QuestionLike, AnswerLike, Tag, QuestionTag, Profile, Profile
+
 from faker import Faker
+import random
 from tqdm import tqdm
 import os
+
 
 fake = Faker()
 
@@ -33,18 +35,36 @@ class Command(BaseCommand):
         self.user_number = population_value
         self.question_number = population_value * 10
         self.answer_number = population_value * 100
+        self.average_answers_per_question = self.answer_number / self.question_number
         self.tag_number = population_value
         self.like_number = population_value * 200
+    
+    def is_population_value_valid(self, population_value):
+        return population_value >= 20
 
     def handle(self, *args, **options):
+        if (not self.is_population_value_valid(options[self.population_value_arg_name])):
+            print("Population value should be greater than 20. Stopping...")
+            return
+
         self.init_values(options[self.population_value_arg_name])
 
         self.generate_users()
         self.generate_questions()
         self.generate_answers()
+        self.tick_correct_answers()
         self.generate_tags()
         self.generate_question_likes()
         self.generate_answer_likes()
+    
+    def tick_correct_answers(self):
+        questions = Question.objects.all()
+        for question in tqdm(questions, desc="Ticking Correct Answers"):
+            answers = Answer.objects.filter(question=question)
+            if len(answers) > 0:
+                correct_answer = random.choice(answers)
+                correct_answer.is_accepted = True
+                correct_answer.save()
 
     def generate_users(self):
         import os

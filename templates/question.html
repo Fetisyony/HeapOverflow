@@ -27,7 +27,7 @@
                             class="img-fluid question_profile_image">
                     </div>
                 </div>
-                <input class="form-control question_rate" type="number" placeholder="0"
+                <input class="form-control question_rate" type="number" placeholder="{{ question.likes.count }}"
                     aria-label="default input example">
             </div>
         </div>
@@ -58,7 +58,7 @@
                         </div>
 
                         <div class="d-flex flex-row gap-3">
-                            {% for tag in question.tags %}
+                            {% for tag in question.tags.all %}
                                 {% include 'layouts/tag-element.html' %}
                             {% endfor %}
                         </div>
@@ -70,117 +70,9 @@
     <hr class="my-4">
     <!-- list of answers like cards -->
     <div class="d-flex flex-column gap-3 cards_width mb-5">
-        <div class="row">
-            <div class="d-flex col-1 justify-content-center align-items-center">
-                <!-- green round button that shows that answer is correct -->
-                 <!-- the symbol of che -->
-                <div class="d-flex justify-content-center align-items-center">
-                    <button type="button" class="btn btn-success circle-button">
-                        <i class="fas fa-check"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="d-flex col card custom-card w-100 answer-card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="d-flex col-2 align-items-center justify-content-center">
-                            <div class="d-flex flex-column gap-1 justify-content-center align-items-center">
-                                <div>
-                                    <h6 class="card-subtitletext-body-secondary">John Doe</h6>
-                                </div>
-
-                                <div class="answer-image-container mb-3">
-                                    <img src="{% static 'img/AnswerProfile2.png' %}" alt="Avatar"
-                                        class="img-fluid answer_profile_image">
-                                </div>
-                                <input class="form-control answer_rate" type="number" placeholder="0"
-                                    aria-label="default input example">
-                            </div>
-                        </div>
-                        <div class="d-flex col flex-column">
-                            <h6 class="card-subtitle mb-2 text-body-secondary mt-2">Lorem ipsum dolor sit
-                                amet consectetur adipisicing elit. At, iure?</h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="d-flex col-1 justify-content-center align-items-center">
-                <!-- green round button that shows that answer is correct -->
-                <div class="d-flex justify-content-center align-items-center">
-                    <button type="button" class="circle-button-empty">
-                    </button>
-                </div>
-            </div>
-            <div class="d-flex col card custom-card w-100 answer-card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="d-flex col-2 align-items-center justify-content-center">
-                            <div class="d-flex flex-column gap-1 justify-content-center align-items-center">
-                                <div>
-                                    <h6 class="card-subtitletext-body-secondary">John Doe</h6>
-                                </div>
-
-                                <div class="answer-image-container mb-3">
-                                    <img src="{% static 'img/AnswerProfile2.png' %}" alt="Avatar"
-                                        class="img-fluid answer_profile_image">
-                                </div>
-                                <input class="form-control answer_rate" type="number" placeholder="0"
-                                    aria-label="default input example">
-                            </div>
-                        </div>
-                        <div class="d-flex col flex-column">
-                            <h6 class="card-subtitle mb-2 text-body-secondary mt-2">Lorem ipsum dolor sit,
-                                amet consectetur adipisicing elit. Consequatur, eos. Numquam, iusto
-                                doloremque! Asperiores mollitia corrupti quod non perferendis voluptatibus
-                                molestias nam vero? Harum sapiente odio maiores natus itaque minima magnam,
-                                veritatis reprehenderit nam voluptatem labore molestiae assumenda et impedit
-                                totam alias. Fugit dolorem dolore iure doloremque, iste natus deleniti
-                                corrupti ipsam porro nam laudantium repellat voluptatem quos ex dignissimos.
-                                Voluptas sapiente hic praesentium tempora rem vero rerum adipisci, harum
-                                enim similique labore repudiandae eaque magni ab modi voluptatum, ducimus
-                                deserunt. Nostrum deleniti, maxime numquam at ipsa alias sed, inventore
-                                atque voluptates ea necessitatibus magnam autem nisi minus cum harum.</h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="d-flex col-1 justify-content-center align-items-center">
-                <!-- green round button that shows that answer is correct -->
-                <div class="d-flex justify-content-center align-items-center">
-                    <button type="button" class="circle-button-empty">
-                    </button>
-                </div>
-            </div>
-            <div class="d-flex col card custom-card w-100 answer-card rounded-5">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="d-flex col-2 align-items-center justify-content-center">
-                            <div class="d-flex flex-column gap-1 justify-content-center align-items-center">
-                                <div>
-                                    <h6 class="card-subtitletext-body-secondary">John Doe</h6>
-                                </div>
-
-                                <div class="answer-image-container mb-3">
-                                    <img src="{% static 'img/AnswerProfile2.png' %}" alt="Avatar"
-                                        class="img-fluid answer_profile_image">
-                                </div>
-                                <input class="form-control answer_rate" type="number" placeholder="0"
-                                    aria-label="default input example">
-                            </div>
-                        </div>
-                        <div class="d-flex col flex-column">
-                            <h6 class="card-subtitle mb-2 text-body-secondary mt-2">Lorem ipsum dolor sit
-                                amet consectetur adipisicing elit. Voluptatibus quia totam aspernatur
-                                quaerat ab praesentium corrupti, eveniet sit quae eaque.</h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% for answer in answers %}
+            {% include 'layouts/answer_card.html' %}
+        {% endfor %}
     </div>
     <!-- create input field -->
     <div class="d-flex flex-column gap-3 mb-5">

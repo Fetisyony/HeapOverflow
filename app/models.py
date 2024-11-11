@@ -3,18 +3,18 @@ from django.contrib.auth.models import User
 
 
 class QuestionManager(models.Manager):
-    def get_question(self, question_id):
+    def get_question_by_id(self, question_id):
         return self.get(pk=question_id)
 
     def get_hot_questions(self):
-        return self.order_by('-likes')
+        return self.annotate(likes_count=models.Count('likes')).order_by('-likes_count')
 
     def get_rating_by_question_id(self, question_id):
         return self.get(pk=question_id).likes.count()
 
 class AnswerManager(models.Manager):
     def get_answers_by_question_id(self, question_id):
-        return self.filter(question=question_id)
+        return self.filter(question_id=question_id).annotate(likes_count=models.Count('likes')).order_by('-is_accepted', '-likes_count')
 
 class ProfileManager(models.Manager):
     def get_top_n_users_by_number_of_answers(self, n):
