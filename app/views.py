@@ -1,7 +1,6 @@
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
-
-from app.data import QUESTIONS, POPULAR_TAGS, TOP_USER_LIST
+from .models import Question, Profile, Tag, QuestionTag, Answer, QuestionLike, AnswerLike
 
 
 def paginate(objects_list, request, per_page=4):
@@ -19,7 +18,11 @@ def paginate(objects_list, request, per_page=4):
     return page, page_number
 
 def index(request):
-    page, page_number = paginate(QUESTIONS, request, per_page=4)
+    questions = Question.objects.all()
+    popular_tags = Tag.objects.get_popular_n_tags()
+    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
+
+    page, page_number = paginate(questions, request, per_page=10)
     if (page is None):
         return redirect(f"/?page={page_number}")
 
@@ -30,13 +33,14 @@ def index(request):
             'page_obj': page,
             'questions': page.object_list,
 
-            'popular_tags': POPULAR_TAGS,
-            'top_users': TOP_USER_LIST
+            'popular_tags': popular_tags,
+            'top_users': top_users
         }
     )
 
 def hot(request):
-    page, page_number = paginate(QUESTIONS, request, per_page=4)
+    questions = Question.objects.get_hot_questions()
+    page, page_number = paginate(questions, request, per_page=4)
     if (page is None):
         return redirect(f"/?page={page_number}")
 
@@ -63,7 +67,7 @@ def settings(request):
     )
 
 def question(request, question_id):
-    if (question_id < 0) or (question_id >= len(QUESTIONS)):
+    if (question_id < 0) or (question_id >= len(questions)):
         return render(
                         request, 
                         'question_not_found.html',
@@ -78,7 +82,7 @@ def question(request, question_id):
         request,
         template_name="question.html",
         context={
-            'question': QUESTIONS[question_id],
+            'question': questions[question_id],
             'popular_tags': POPULAR_TAGS,
             'top_users': TOP_USER_LIST
         }
@@ -95,7 +99,7 @@ def ask_question(request):
     )
 
 def tag(request, tag_name):
-    page, page_number = paginate(QUESTIONS, request, per_page=4)
+    page, page_number = paginate(questions, request, per_page=4)
     if (page is None):
         return redirect(f"/?page={page_number}")
 

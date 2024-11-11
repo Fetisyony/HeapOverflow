@@ -8,9 +8,9 @@
             <div class="d-flex col-2 align-items-center">
                 <div
                     class="d-flex flex-column gap-2 justify-content-center mb-2 align-items-center">
-                <img src="{% static question.author.avatar %}" alt="Avatar"
+                <img src="{{ question.user.profile_picture.url }}" alt="Avatar"
                         class="img-fluid question_profile_image">
-                    <input class="form-control" type="number" placeholder="0"
+                    <input class="form-control" type="number" placeholder="{{ question.likes.count }}"
                         aria-label="default input example">
                 </div>
             </div>
@@ -20,18 +20,17 @@
                         {{ question.title }}
                     </a>
                 </h5>
-                <h6 class="card-subtitle mb-2 text-body-secondary mt-2">{{ question.text }}</h6>
+                <h6 class="card-subtitle mb-2 text-body-secondary mt-2">{{ question.body }}</h6>
 
                 <div class="d-flex gap-4 mt-auto mb-1">
                     <a href="{% url 'question' question.id %}" class="card-link text-decoration-none">Answers (3)</a>
                     <div class="d-flex flex-row">
                         <div class="text me-3">Tags:</div>
 
-                        {% for tag in question.tags %}
+                        {% for tag in question.tags.all %}
                             {% include 'layouts/tag-element.html' %}
                         {% endfor %}
                     </div>
-
                 </div>
             </div>
         </div>

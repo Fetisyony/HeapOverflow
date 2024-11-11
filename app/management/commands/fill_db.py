@@ -2,13 +2,18 @@ import random
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
+from django.core.files import File
+from django.db import transaction
 from app.models import Question, Answer, QuestionLike, AnswerLike, Tag, QuestionTag, Profile, Profile
 from faker import Faker
 from tqdm import tqdm
+import os
 
 fake = Faker()
 
 DEFAULT_POPULATION_VALUE = 10
+
+PROFILE_IMG_PATH = os.path.join(settings.MEDIA_ROOT, 'images')
 
 
 class Command(BaseCommand):
@@ -44,29 +49,31 @@ class Command(BaseCommand):
     def generate_users(self):
         import os
 
-        base_dir = settings.BASE_DIR
-        profile_img_paths = os.path.join(base_dir, 'assets', 'images')
-        images = os.listdir(profile_img_paths)
+        images = os.listdir(PROFILE_IMG_PATH)
 
         user_batch = []
         profile_batch = []
 
         for i in tqdm(range(self.user_number), desc="Creating Users and Profiles"):
             user = User(username=fake.user_name(), password='1')
+            user.save()
             user_batch.append(user)
 
-            profile = Profile(user=user, profile_picture=os.path.join(profile_img_paths, random.choice(images)))
+            random_image = random.choice(images)
+
+            profile = Profile(user=user)
+            with open(os.path.join(PROFILE_IMG_PATH, random_image), 'rb') as img_file:
+                profile.profile_picture.save(random_image, File(img_file))
+
+            profile.save()
             profile_batch.append(profile)
 
-            if (i + 1) % self.batch_size == 0:
-                User.objects.bulk_create(user_batch)
-                Profile.objects.bulk_create(profile_batch)
-                user_batch = []
-                profile_batch = []
+        with transaction.atomic():
+            for user in user_batch:
+                user.save()
 
-        if len(user_batch) > 0:
-            User.objects.bulk_create(user_batch)
-            Profile.objects.bulk_create(profile_batch)
+            for profile in profile_batch:
+                profile.save()
 
     def generate_questions(self):
         question_batch = []
