@@ -113,6 +113,7 @@ def ask_question(request):
     )
 
 def tag(request, tag_name):
+    questions = Question.objects.get_questions_by_tag_name(tag_name)
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
