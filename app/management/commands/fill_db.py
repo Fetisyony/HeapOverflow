@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
     tags_per_question_number = 3
 
-    batch_size = 1000
+    batch_size = 500
 
     def add_arguments(self, parser):
         parser.add_argument(self.population_value_arg_name, nargs='?', type=int,

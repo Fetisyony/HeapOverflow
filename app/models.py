@@ -9,9 +9,6 @@ class QuestionManager(models.Manager):
     def get_hot_questions(self):
         return self.annotate(likes_count=models.Count('likes')).order_by('-likes_count')
 
-    def get_rating_by_question_id(self, question_id):
-        return self.get(pk=question_id).likes.count()
-
     def get_questions_by_tag_name(self, tag_name):
         return self.filter(tags__name=tag_name)
 
@@ -71,7 +68,7 @@ class QuestionLike(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='liked_questions')
 
     class Meta:
-        unique_together = ('question', 'user')  # Enforces unique likes
+        unique_together = ('question', 'user')
 
 class AnswerLike(models.Model):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='likes')
@@ -88,7 +85,7 @@ class QuestionTag(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('question', 'tag') # Prevents duplicate tag assignments
+        unique_together = ('question', 'tag') # to prevent duplicate tags
     
     def __str__(self):
         return f"({self.question.title} -- {self.tag.name})"
