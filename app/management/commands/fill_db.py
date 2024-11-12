@@ -22,9 +22,18 @@ class Command(BaseCommand):
     help = 'Populates the database with sample data.'
     population_value_arg_name = 'ratio'
 
-    tags_per_question_number = 3
+    tags_limit_per_question_number = 4
+
+    question_number_factor = 10
+    answer_number_factor = 100
+    like_number_factor = 200
 
     batch_size = 500
+
+    description_width = 27
+
+    def format_description(self, description):
+        return description.ljust(self.description_width)
 
     def add_arguments(self, parser):
         parser.add_argument(self.population_value_arg_name, nargs='?', type=int,
@@ -33,21 +42,24 @@ class Command(BaseCommand):
     def init_values(self, population_value):
         self.population_value = population_value
         self.user_number = population_value
-        self.question_number = population_value * 10
-        self.answer_number = population_value * 100
-        self.average_answers_per_question = self.answer_number / self.question_number
+        self.question_number = population_value * self.question_number_factor
+        self.answer_number = population_value * self.answer_number_factor
         self.tag_number = population_value
-        self.like_number = population_value * 200
+        self.like_number = population_value * self.like_number_factor
+
+        self.average_answers_per_question = self.answer_number_factor / self.question_number_factor
     
     def is_population_value_valid(self, population_value):
-        return population_value >= 20
+        # return population_value * population_value * self.question_number_factor >= population_value * self.like_number_factor
+        return population_value * self.question_number_factor >= self.like_number_factor
 
     def handle(self, *args, **options):
-        if (not self.is_population_value_valid(options[self.population_value_arg_name])):
+        population_value = options[self.population_value_arg_name]
+        if (not self.is_population_value_valid(population_value)):
             print("Population value should be greater than 20. Stopping...")
             return
 
-        self.init_values(options[self.population_value_arg_name])
+        self.init_values(population_value)
 
         self.generate_users()
         self.generate_questions()
@@ -59,7 +71,7 @@ class Command(BaseCommand):
     
     def tick_correct_answers(self):
         questions = Question.objects.all()
-        for question in tqdm(questions, desc="Ticking Correct Answers"):
+        for question in tqdm(questions, desc=self.format_description("Ticking Correct Answers")):
             answers = Answer.objects.filter(question=question)
             if len(answers) > 0:
                 correct_answer = random.choice(answers)
@@ -67,15 +79,22 @@ class Command(BaseCommand):
                 correct_answer.save()
 
     def generate_users(self):
-        import os
-
         images = os.listdir(PROFILE_IMG_PATH)
 
         user_batch = []
         profile_batch = []
 
-        for i in tqdm(range(self.user_number), desc="Creating Users and Profiles"):
-            user = User(username=fake.user_name(), password='1')
+        user_names = set()
+        for _ in range(self.user_number):
+            user_name = fake.user_name()
+            while user_name in user_names:
+                user_name = fake.user_name()
+            user_names.add(user_name)
+        
+        user_names = list(user_names)
+
+        for i in tqdm(range(self.user_number), desc=self.format_description("Creating Users and Profiles")):
+            user = User(username=user_names[i], password='1')
             user.save()
             user_batch.append(user)
 
@@ -100,11 +119,11 @@ class Command(BaseCommand):
 
         profile_ids = Profile.objects.values_list('id', flat=True)
 
-        for i in tqdm(range(self.question_number), desc="Creating Questions"):
+        for i in tqdm(range(self.question_number), desc=self.format_description("Creating Questions")):
             question = Question(
                 user_id=random.choice(profile_ids),
                 title=fake.sentence(),
-                body=fake.text(),
+                body=fake.text(random.randint(30, 300)),
             )
             question_batch.append(question)
 
@@ -121,11 +140,11 @@ class Command(BaseCommand):
         profile_ids = Profile.objects.values_list('id', flat=True)
         question_ids = Question.objects.values_list('id', flat=True)
 
-        for i in tqdm(range(self.answer_number), desc="Creating Answers"):
+        for i in tqdm(range(self.answer_number), desc=self.format_description("Creating Answers")):
             answer = Answer(
                 user_id=random.choice(profile_ids),
                 question_id=random.choice(question_ids),
-                body=fake.paragraph(),
+                body=fake.paragraph(random.randint(2, 20), variable_nb_sentences=True),
             )
             answer_batch.append(answer)
 
@@ -145,7 +164,7 @@ class Command(BaseCommand):
         question_ids = Question.objects.values_list('id', flat=True)
         profile_ids = Profile.objects.values_list('id', flat=True)
 
-        for _ in tqdm(range(self.like_number), desc="Creating Likes"):
+        for _ in tqdm(range(self.like_number), desc=self.format_description("Creating Likes to Questions")):
             question_like = QuestionLike(
                 question_id=random.choice(question_ids),
                 user_id=random.choice(profile_ids),
@@ -169,7 +188,7 @@ class Command(BaseCommand):
         answers_ids = Answer.objects.values_list('id', flat=True)
         profile_ids = Profile.objects.values_list('id', flat=True)
 
-        for i in tqdm(range(self.like_number), desc="Creating Likes"):
+        for i in tqdm(range(self.like_number), desc=self.format_description("Creating Likes to Answers")):
             answer_like = AnswerLike(
                 answer_id=random.choice(answers_ids),
                 user_id=random.choice(profile_ids),
@@ -188,14 +207,14 @@ class Command(BaseCommand):
         pull_of_tags = set(["python", "windows", "shell", "ruby", "testing", "django", "flask", "sql", "nosql", "docker", "kubernetes", "aws", "azure", "gcp", "devops", "git", "github", "gitlab", "bitbucket", "javascript", "typescript", "react", "angular", "vue", "nodejs", "express", "mongodb", "postgresql", "mysql", "sqlite", "redis", "rabbitmq", "kafka", "nginx", "apache", "gunicorn", "uwsgi", "jinja", "html", "css", "sass", "less", "bootstrap", "tailwind", "webpack", "gulp", "grunt", "babel", "eslint", "prettier", "jest", "mocha", "chai", "cypress", "selenium", "webdriver", "appium", "jenkins", "circleci", "bitbucket-pipelines", "heroku", "netlify", "vercel", "digitalocean", "linode", "aws-lambda", "azure-functions", "google-cloud-functions", "serverless", "nextjs", "nuxtjs", "deno", "nestjs", "wordpress", "joomla", "api", "magento", "shopify", "woocommerce", "prestashop", "opencart", "bigcommerce", "salesforce", "sap", "oracle", "microsoft", "android", "ios", "flutter", "react-native", "ionic", "cordova", "phonegap", "xamarin", "unity", "unreal", "godot", "blender", "maya", "3ds-max", "autocad", "solidworks"])
 
         tags = []
-        for tag_name in tqdm(pull_of_tags, desc="Creating Tags"):
+        for tag_name in tqdm(pull_of_tags, desc=self.format_description("Creating Tags")):
             tags.append(Tag(name=tag_name))
 
         Tag.objects.bulk_create(tags)
 
         question_tags = []
-        for question in tqdm(Question.objects.all(), desc="Assigning Tags to Questions"):
-            num_tags = random.randint(2, self.tags_per_question_number)
+        for question in tqdm(Question.objects.all(), desc=self.format_description("Assigning Tags to Questions")):
+            num_tags = random.randint(2, self.tags_limit_per_question_number)
             question_tags.extend([QuestionTag(question=question, tag=tag) for tag in random.sample(tags, num_tags)])
 
         QuestionTag.objects.bulk_create(question_tags)

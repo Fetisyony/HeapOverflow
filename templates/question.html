@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block tab_title %}
-    AskPumpkin: Question
+    AskPumpkin: {{ question.title }}
 {% endblock %}
 
 {% block extra_css %}
@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block page_content_title %}
-    How to center div?
+    {{ question.title }}
 {% endblock %}
 
 {% block content %}
@@ -19,7 +19,7 @@
         <div class="col-3 d-flex justify-content-center flex-column">
             <div class="d-flex flex-column gap-2 justify-content-center align-items-center">
                 <div>
-                    <h6 class="card-subtitletext-body-secondary">John Doe</h6>
+                    <h6 class="card-subtitletext-body-secondary">{{ question.user.user.username }}</h6>
                 </div>
                 <div class="image-container mb-2">
                     <div class="img-responsive-container">
@@ -33,24 +33,7 @@
         </div>
         <div class="col-8">
             <div class="d-flex flex-column gap-2">
-                <h6 class="mb-2 text-body-secondary">Lorem ipsum dolor sit amet consectetur adipisicing
-                    elit. Eaque aliquid voluptatibus hic, libero minima assumenda placeat in voluptatem est
-                    modi? Dolorum perspiciatis autem mollitia vero voluptatibus ducimus, facilis sit tenetur
-                    quaerat optio cum velit quos officiis nesciunt quis nostrum! Minima distinctio numquam
-                    unde ipsam fugiat dignissimos ut ex, et minus officiis debitis maiores non mollitia,
-                    possimus accusamus pariatur ratione eos commodi perferendis quas assumenda? Nobis quod
-                    numquam, molestiae natus nostrum distinctio omnis fugit explicabo libero sed sunt
-                    assumenda, vero nisi ratione a recusandae dolor quos. Aut aliquid nobis ex et error,
-                    ipsam quos ea nesciunt. Dignissimos deserunt rem doloribus sequi enim molestiae
-                    sapiente. Blanditiis ratione praesentium ex tempore? Repellat facilis, ad harum ullam
-                    perspiciatis commodi tempore dignissimos magni voluptatum, minima non cum veritatis?
-                    Iste corporis nemo fugiat delectus perferendis, natus explicabo temporibus sapiente
-                    corrupti quae consequatur nihil expedita optio rerum commodi culpa repudiandae
-                    doloremque labore illo ipsum quibusdam magni inventore voluptates unde! Dicta illum
-                    omnis amet quos quidem, voluptatum nam quibusdam error ducimus vel cumque exercitationem
-                    tempore cum minima voluptate natus, molestiae, eum totam minus fuga. Illum possimus
-                    consequuntur illo corporis iure eveniet et sit asperiores, exercitationem, sapiente
-                    doloremque deserunt quas tempore ullam magnam ad, quae itaque aliquam hic eius!</h6>
+                <h6 class="mb-2 text-body-secondary">{{ question.body }}</h6>
                 <div class="d-flex gap-5 mt-auto mb-1">
                     <div class="d-flex flex-row justify-content-center align-items-baseline">
                         <div class="text me-3">

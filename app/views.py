@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
-from .models import Question, Profile, Tag, QuestionTag, Answer, QuestionLike, AnswerLike
+from .models import Question, Profile, Tag, Answer
 
 
 def paginate(objects_list, request, per_page=4):
@@ -74,19 +74,12 @@ def settings(request):
 
 def question(request, question_id):
     questions = Question.objects.get_hot_questions()
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
     if (question_id < 0) or (question_id >= len(questions)):
-        return render(
-                        request, 
-                        'question_not_found.html',
-                        status=404,
-                        context={
-                            'popular_tags': popular_tags,
-                            'top_users': top_users
-                        }
-                    )
+        return question_not_found(request)
+
+    popular_tags = Tag.objects.get_popular_n_tags()
+    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
     return render(
         request,
@@ -98,6 +91,20 @@ def question(request, question_id):
             'top_users': top_users
         }
     )
+
+def question_not_found(request):
+    popular_tags = Tag.objects.get_popular_n_tags()
+    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
+
+    return render(
+            request,
+            'question_not_found.html',
+            status=404,
+            context={
+                'popular_tags': popular_tags,
+                'top_users': top_users
+            }
+        )
 
 def ask_question(request):
     popular_tags = Tag.objects.get_popular_n_tags()

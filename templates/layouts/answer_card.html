@@ -22,11 +22,11 @@
                 <div class="d-flex col-2 align-items-center justify-content-center">
                     <div class="d-flex flex-column gap-1 justify-content-center align-items-center">
                         <div>
-                            <h6 class="card-subtitletext-body-secondary">John Doe</h6>
+                            <h6 class="card-subtitletext-body-secondary">{{ answer.user.user.username }}</h6>
                         </div>
 
                         <div class="answer-image-container mb-3">
-                            <img src="{% static 'img/AnswerProfile2.png' %}" alt="Avatar"
+                            <img src="{{ answer.user.profile_picture.url }}" alt="Avatar"
                                 class="img-fluid answer_profile_image">
                         </div>
                         <input class="form-control answer_rate" type="number" placeholder="{{ answer.likes.count }}"
@@ -34,8 +34,7 @@
                     </div>
                 </div>
                 <div class="d-flex col flex-column">
-                    <h6 class="card-subtitle mb-2 text-body-secondary mt-2">Lorem ipsum dolor sit
-                        amet consectetur adipisicing elit. At, iure?</h6>
+                    <h6 class="card-subtitle mb-2 text-body-secondary mt-2">{{ answer.body }}</h6>
                 </div>
             </div>
         </div>
