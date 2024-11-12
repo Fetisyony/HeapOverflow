@@ -48,7 +48,7 @@ class Command(BaseCommand):
         self.like_number = population_value * self.like_number_factor
 
         self.average_answers_per_question = self.answer_number_factor / self.question_number_factor
-    
+
     def is_population_value_valid(self, population_value):
         # return population_value * population_value * self.question_number_factor >= population_value * self.like_number_factor
         return population_value * self.question_number_factor >= self.like_number_factor
@@ -68,7 +68,7 @@ class Command(BaseCommand):
         self.generate_tags()
         self.generate_question_likes()
         self.generate_answer_likes()
-    
+
     def tick_correct_answers(self):
         questions = Question.objects.all()
         for question in tqdm(questions, desc=self.format_description("Ticking Correct Answers")):
@@ -77,21 +77,15 @@ class Command(BaseCommand):
                 correct_answer = random.choice(answers)
                 correct_answer.is_accepted = True
                 correct_answer.save()
-
+    
     def generate_users(self):
         images = os.listdir(PROFILE_IMG_PATH)
 
         user_batch = []
         profile_batch = []
 
-        user_names = set()
-        for _ in range(self.user_number):
-            user_name = fake.user_name()
-            while user_name in user_names:
-                user_name = fake.user_name()
-            user_names.add(user_name)
-        
-        user_names = list(user_names)
+        user_names = [fake.unique.user_name() for _ in range(self.user_number)]
+        assert len(set(user_names)) == len(user_names)
 
         for i in tqdm(range(self.user_number), desc=self.format_description("Creating Users and Profiles")):
             user = User(username=user_names[i], password='1')
@@ -154,7 +148,7 @@ class Command(BaseCommand):
 
         if len(answer_batch):
             Answer.objects.bulk_create(answer_batch)
-        
+
     def generate_question_likes(self):
         question_like_batch = []
 
@@ -178,7 +172,7 @@ class Command(BaseCommand):
             question_like_batch.append(question_like)
 
         QuestionLike.objects.bulk_create(question_like_batch)
-    
+
     def generate_answer_likes(self):
         answer_like_batch = []
 
@@ -200,7 +194,7 @@ class Command(BaseCommand):
                     answer_like.answer_id = random.choice(answers_ids)
                 used_answers[answer_like.user_id].add(answer_like.answer_id)
             answer_like_batch.append(answer_like)
-        
+
         AnswerLike.objects.bulk_create(answer_like_batch)
 
     def generate_tags(self):
