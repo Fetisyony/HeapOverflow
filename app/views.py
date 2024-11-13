@@ -101,17 +101,16 @@ def settings(request):
     )
 
 def question(request, question_id):
-    questions = Question.objects.get_hot_questions()
-
-    if (question_id < 0) or (question_id >= len(questions)):
+    if (question_id <= 0) or (question_id >= Question.objects.count()):
         return question_not_found(request)
 
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
-    questions = Question.objects.annotate(
-        votes_count=Sum('votes__vote_type'),
-    ).order_by('-created_at')
+    answers = Answer.objects.get_answers_by_question_id(question_id)
+    page, page_number = paginate(answers, request, per_page=7)
+    if (page is None):
+        return redirect(f"/?page={page_number}")
 
     return render(
         request,
@@ -119,7 +118,8 @@ def question(request, question_id):
         context={
             'question': Question.objects
                 .get_question_by_id(question_id),
-            'answers': Answer.objects.get_answers_by_question_id(question_id),
+            'page_obj': page,
+            'answers': page.object_list,
             'popular_tags': popular_tags,
             'top_users': top_users
         }

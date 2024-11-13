@@ -40,6 +40,13 @@ class Tag(models.Model):
     name = models.CharField(max_length=255, unique=True)
     objects = TagManager()
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name"], name="unique_tag_name_case_insensitive", condition=Q(name__iexact=None)
+            )
+        ]
+
     def __str__(self):
         return self.name
 
