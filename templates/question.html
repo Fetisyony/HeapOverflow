@@ -27,8 +27,7 @@
                             class="img-fluid question_profile_image">
                     </div>
                 </div>
-                <input class="form-control question_rate" type="number" placeholder="{{ question.likes.count }}"
-                    aria-label="default input example">
+                {% include 'layouts/vote_container.html' with votes_count=question.votes_count %}
             </div>
         </div>
         <div class="col-8">

@@ -1,0 +1,11 @@
+{% load static %}
+
+<link href="{% static 'css/vote_container.css' %}" rel="stylesheet">
+
+<div class="container mt-1">
+    <div class="vote-controller">
+      <button type="button" class="btn" id="decrement">-</button>
+      <span class="vote-count" id="like-count">{{ votes_count }}</span>
+      <button type="button" class="btn" id="increment">+</button>
+    </div>
+</div>

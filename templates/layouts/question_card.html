@@ -1,22 +1,19 @@
 {% load static %}
 
-<link href="{% static 'css/index.css' %}" rel="stylesheet">
+<link href="{% static 'css/vote_container.css' %}" rel="stylesheet">
+<link href="{% static 'css/question_card.css' %}" rel="stylesheet">
 
 <div class="card w-100" style="width: 18rem; padding-bottom: 10px; padding-top: 10px;">
     <div class="card-body">
         <div class="row">
-            <div class="d-flex col-2 align-items-center">
-                <div
-                    class="d-flex flex-column gap-2 justify-content-center mb-2 align-items-center">
+            <div class="d-flex col-2 flex-column align-items-center gap-2 justify-content-center mb-2">
                 <img src="{{ question.user.profile_picture.url }}" alt="Avatar"
                         class="img-fluid question_profile_image">
-                    <input class="form-control" type="number" placeholder="{{ question.likes.count }}"
-                        aria-label="default input example">
-                </div>
+                {% include 'layouts/vote_container.html' with votes_count=question.votes_count %}
             </div>
             <div class="d-flex col-9 flex-column">
                 <h5 class="card-title">
-                    <a href="{% url 'question' question.id %}" class="answer-header">
+                    <a href="{% url 'question' question.id %}" class="question-title">
                         {{ question.title }}
                     </a>
                 </h5>
