@@ -3,7 +3,8 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.db import transaction
-from app.models import Question, Answer, QuestionLike, AnswerLike, Tag, QuestionTag, Profile, Profile
+from django.utils import timezone
+from app.models import Question, Answer, QuestionVote, AnswerVote, Tag, QuestionTag, Profile, Profile
 
 from faker import Faker
 import random
@@ -118,6 +119,7 @@ class Command(BaseCommand):
                 user_id=random.choice(profile_ids),
                 title=fake.sentence(),
                 body=fake.text(random.randint(30, 300)),
+                created_at=timezone.make_aware(fake.date_time_this_decade()),
             )
             question_batch.append(question)
 
@@ -139,6 +141,7 @@ class Command(BaseCommand):
                 user_id=random.choice(profile_ids),
                 question_id=random.choice(question_ids),
                 body=fake.paragraph(random.randint(2, 20), variable_nb_sentences=True),
+                created_at=timezone.make_aware(fake.date_time_this_decade()),
             )
             answer_batch.append(answer)
 
@@ -152,16 +155,16 @@ class Command(BaseCommand):
     def generate_question_likes(self):
         question_like_batch = []
 
-        users = list(Profile.objects.all())
-
         used_questions = {}
         question_ids = Question.objects.values_list('id', flat=True)
         profile_ids = Profile.objects.values_list('id', flat=True)
 
-        for _ in tqdm(range(self.like_number), desc=self.format_description("Creating Likes to Questions")):
-            question_like = QuestionLike(
+        for _ in tqdm(range(self.like_number), desc=self.format_description("Creating Votes to Questions")):
+            question_like = QuestionVote(
                 question_id=random.choice(question_ids),
                 user_id=random.choice(profile_ids),
+                vote_type=random.choice([1, -1]),
+                created_at=timezone.make_aware(fake.date_time_this_decade()),
             )
             if (question_like.user_id not in used_questions):
                 used_questions[question_like.user_id] = {question_like.question_id}
@@ -171,21 +174,21 @@ class Command(BaseCommand):
                 used_questions[question_like.user_id].add(question_like.question_id)
             question_like_batch.append(question_like)
 
-        QuestionLike.objects.bulk_create(question_like_batch)
+        QuestionVote.objects.bulk_create(question_like_batch)
 
     def generate_answer_likes(self):
         answer_like_batch = []
-
-        users = list(Profile.objects.all())
 
         used_answers = {}
         answers_ids = Answer.objects.values_list('id', flat=True)
         profile_ids = Profile.objects.values_list('id', flat=True)
 
-        for i in tqdm(range(self.like_number), desc=self.format_description("Creating Likes to Answers")):
-            answer_like = AnswerLike(
+        for i in tqdm(range(self.like_number), desc=self.format_description("Creating Votes to Answers")):
+            answer_like = AnswerVote(
                 answer_id=random.choice(answers_ids),
                 user_id=random.choice(profile_ids),
+                vote_type=random.choice([1, -1]),
+                created_at=timezone.make_aware(fake.date_time_this_decade()),
             )
             if (answer_like.user_id not in used_answers):
                 used_answers[answer_like.user_id] = {answer_like.answer_id}
@@ -195,7 +198,7 @@ class Command(BaseCommand):
                 used_answers[answer_like.user_id].add(answer_like.answer_id)
             answer_like_batch.append(answer_like)
 
-        AnswerLike.objects.bulk_create(answer_like_batch)
+        AnswerVote.objects.bulk_create(answer_like_batch)
 
     def generate_tags(self):
         pull_of_tags = set(["python", "windows", "shell", "ruby", "testing", "django", "flask", "sql", "nosql", "docker", "kubernetes", "aws", "azure", "gcp", "devops", "git", "github", "gitlab", "bitbucket", "javascript", "typescript", "react", "angular", "vue", "nodejs", "express", "mongodb", "postgresql", "mysql", "sqlite", "redis", "rabbitmq", "kafka", "nginx", "apache", "gunicorn", "uwsgi", "jinja", "html", "css", "sass", "less", "bootstrap", "tailwind", "webpack", "gulp", "grunt", "babel", "eslint", "prettier", "jest", "mocha", "chai", "cypress", "selenium", "webdriver", "appium", "jenkins", "circleci", "bitbucket-pipelines", "heroku", "netlify", "vercel", "digitalocean", "linode", "aws-lambda", "azure-functions", "google-cloud-functions", "serverless", "nextjs", "nuxtjs", "deno", "nestjs", "wordpress", "joomla", "api", "magento", "shopify", "woocommerce", "prestashop", "opencart", "bigcommerce", "salesforce", "sap", "oracle", "microsoft", "android", "ios", "flutter", "react-native", "ionic", "cordova", "phonegap", "xamarin", "unity", "unreal", "godot", "blender", "maya", "3ds-max", "autocad", "solidworks"])

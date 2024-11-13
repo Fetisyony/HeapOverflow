@@ -1,6 +1,8 @@
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
 from .models import Question, Profile, Tag, Answer
+from django.db.models import Sum
+
 
 
 def paginate(objects_list, request, per_page=4):
@@ -18,7 +20,10 @@ def paginate(objects_list, request, per_page=4):
     return page, page_number
 
 def index(request):
-    questions = Question.objects.all()
+    questions = Question.objects.annotate(
+        votes_count=Sum('votes__vote_type'),
+    ).order_by('-created_at')
+
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
@@ -59,6 +64,29 @@ def hot(request):
         }
     )
 
+def tag(request, tag_name):
+    questions = Question.objects.get_questions_by_tag_name(tag_name)
+    popular_tags = Tag.objects.get_popular_n_tags()
+    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
+
+    page, page_number = paginate(questions, request, per_page=4)
+    if (page is None):
+        return redirect(f"/?page={page_number}")
+
+    return render(
+        request,
+        template_name="tag.html",
+        context={
+            'page_obj': page,
+            'questions': page.object_list,
+
+            'tag_name': tag_name,
+
+            'popular_tags': popular_tags,
+            'top_users': top_users
+        }
+    )
+
 def settings(request):
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
@@ -81,11 +109,16 @@ def question(request, question_id):
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
+    questions = Question.objects.annotate(
+        votes_count=Sum('votes__vote_type'),
+    ).order_by('-created_at')
+
     return render(
         request,
         template_name="question.html",
         context={
-            'question': Question.objects.get_question_by_id(question_id),
+            'question': Question.objects
+                .get_question_by_id(question_id),
             'answers': Answer.objects.get_answers_by_question_id(question_id),
             'popular_tags': popular_tags,
             'top_users': top_users
@@ -114,29 +147,6 @@ def ask_question(request):
         request,
         template_name="ask.html",
         context={
-            'popular_tags': popular_tags,
-            'top_users': top_users
-        }
-    )
-
-def tag(request, tag_name):
-    questions = Question.objects.get_questions_by_tag_name(tag_name)
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
-
-    page, page_number = paginate(questions, request, per_page=4)
-    if (page is None):
-        return redirect(f"/?page={page_number}")
-
-    return render(
-        request,
-        template_name="tag.html",
-        context={
-            'page_obj': page,
-            'questions': page.object_list,
-
-            'tag_name': tag_name,
-
             'popular_tags': popular_tags,
             'top_users': top_users
         }

@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Q
+from django.db.models import Sum
 
 
 class QuestionManager(models.Manager):
@@ -7,14 +9,14 @@ class QuestionManager(models.Manager):
         return self.get(pk=question_id)
 
     def get_hot_questions(self):
-        return self.annotate(likes_count=models.Count('likes')).order_by('-likes_count')
+        return self.annotate(votes_count=Sum('votes__vote_type')).order_by('-votes_count')
 
     def get_questions_by_tag_name(self, tag_name):
         return self.filter(tags__name=tag_name)
 
 class AnswerManager(models.Manager):
     def get_answers_by_question_id(self, question_id):
-        return self.filter(question_id=question_id).annotate(likes_count=models.Count('likes')).order_by('-is_accepted', '-likes_count')
+        return self.filter(question_id=question_id).annotate(votes_count=models.Count('votes')).order_by('-is_accepted', '-votes_count')
 
 class ProfileManager(models.Manager):
     def get_top_n_users_by_number_of_answers(self, n):
@@ -23,6 +25,7 @@ class ProfileManager(models.Manager):
 class TagManager(models.Manager):
     def get_popular_n_tags(self, n=5):
         return self.annotate(questions_count=models.Count('questions')).order_by('-questions_count')[:n]
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -35,8 +38,14 @@ class Profile(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(max_length=255, unique=True)
-
     objects = TagManager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name"], name="unique_tag_name_case_insensitive", condition=Q(name__iexact=None)
+            )
+        ]
 
     def __str__(self):
         return self.name
@@ -46,8 +55,12 @@ class Question(models.Model):
     title = models.CharField(max_length=255)
     body = models.TextField()
     tags = models.ManyToManyField(Tag, through='QuestionTag', related_name='questions')
+    created_at = models.DateTimeField(default=None)
 
     objects = QuestionManager()
+
+    def votes_count(self):
+        return self.votes.aggregate(votes_count=Sum('vote_type'))['votes_count'] or 0
 
     def __str__(self):
         return self.title
@@ -57,28 +70,36 @@ class Answer(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='answers')
     body = models.TextField()
     is_accepted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=None)
 
     objects = AnswerManager()
 
     def __str__(self):
         return f"Answer to: {self.question.title}"
 
-class QuestionLike(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='likes')
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='liked_questions')
+class QuestionVote(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='votes')
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='voted_questions')
+    vote_type = models.IntegerField(choices=[(1, 'Like'), (-1, 'Dislike')])
+    created_at = models.DateTimeField(default=None)
 
     class Meta:
         unique_together = ('question', 'user')
+    
+    def __str__(self):
+        return f"{self.question} - {self.user} - {self.vote_type}"
 
-class AnswerLike(models.Model):
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='likes')
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='liked_answers')
+class AnswerVote(models.Model):
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='votes')
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='voted_answers')
+    vote_type = models.IntegerField(choices=[(1, 'Like'), (-1, 'Dislike')])
+    created_at = models.DateTimeField(default=None)
 
     class Meta:
         unique_together = ('answer', 'user')
     
     def __str__(self):
-        return f"{self.answer} - {self.user}"
+        return f"{self.answer} - {self.user} - {self.vote_type}"
 
 class QuestionTag(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
