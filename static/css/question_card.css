@@ -3,26 +3,30 @@
     border: #eaebed;
     height: 90px;
     width: 90px;
+    min-width: 90px;
+    min-height: 90px;
+    max-width: 90px;
+    max-height: 90px;
     object-fit: cover;
 }
 
-.cards_width {
-    width: 90% !important;
-}
-
-.answer-header {
+.question-title {
     color: #000;
     text-decoration: none;
 }
 
-.answer-header {
+.question-title {
     font-weight: 600;
     color: #333333;
     text-decoration: none;
     transition: color 0.2s ease, text-decoration 0.2s ease;
 }
 
-.answer-header:hover {
+.question-title:hover {
     color: #000000;
     text-decoration: underline;
+}
+
+.cards_width {
+    width: 90% !important;
 }
