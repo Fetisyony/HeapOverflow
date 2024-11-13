@@ -12,7 +12,7 @@ class QuestionManager(models.Manager):
         return self.annotate(votes_count=Sum('votes__vote_type')).order_by('-votes_count')
 
     def get_questions_by_tag_name(self, tag_name):
-        return self.filter(tags__name=tag_name)
+        return self.filter(tags__name=tag_name).order_by('-created_at')
 
 class AnswerManager(models.Manager):
     def get_answers_by_question_id(self, question_id):

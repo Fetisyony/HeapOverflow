@@ -29,7 +29,7 @@ class Command(BaseCommand):
     answer_number_factor = 100
     like_number_factor = 200
 
-    batch_size = 500
+    batch_size = 1000
 
     description_width = 27
 
