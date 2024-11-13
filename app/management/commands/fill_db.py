@@ -78,36 +78,31 @@ class Command(BaseCommand):
                 correct_answer = random.choice(answers)
                 correct_answer.is_accepted = True
                 correct_answer.save()
-    
+
     def generate_users(self):
         images = os.listdir(PROFILE_IMG_PATH)
+
+        user_names = [fake.unique.user_name() for _ in range(self.user_number)]
 
         user_batch = []
         profile_batch = []
 
-        user_names = [fake.unique.user_name() for _ in range(self.user_number)]
-        assert len(set(user_names)) == len(user_names)
-
-        for i in tqdm(range(self.user_number), desc=self.format_description("Creating Users and Profiles")):
-            user = User(username=user_names[i], password='1')
-            user.save()
+        for user_name in tqdm(user_names, desc=self.format_description("Creating Users and Profiles")):
+            user = User(username=user_name, password='1')
             user_batch.append(user)
 
-            random_image = random.choice(images)
+        users = User.objects.bulk_create(user_batch)
+
+        for user in tqdm(users, desc=self.format_description("Creating Profiles")):
+            img_filename = random.choice(images)
 
             profile = Profile(user=user)
-            with open(os.path.join(PROFILE_IMG_PATH, random_image), 'rb') as img_file:
-                profile.profile_picture.save(random_image, File(img_file))
+            with open(os.path.join(PROFILE_IMG_PATH, img_filename), 'rb') as img_file:
+                profile.profile_picture.save(img_filename, File(img_file), save=False)
 
-            profile.save()
             profile_batch.append(profile)
 
-        with transaction.atomic():
-            for user in user_batch:
-                user.save()
-
-            for profile in profile_batch:
-                profile.save()
+        Profile.objects.bulk_create(profile_batch)
 
     def generate_questions(self):
         question_batch = []
@@ -118,7 +113,7 @@ class Command(BaseCommand):
             question = Question(
                 user_id=random.choice(profile_ids),
                 title=fake.sentence(),
-                body=fake.text(random.randint(30, 300)),
+                body=fake.text(random.randint(30, 400)),
                 created_at=timezone.make_aware(fake.date_time_this_decade()),
             )
             question_batch.append(question)
@@ -140,7 +135,7 @@ class Command(BaseCommand):
             answer = Answer(
                 user_id=random.choice(profile_ids),
                 question_id=random.choice(question_ids),
-                body=fake.paragraph(random.randint(2, 20), variable_nb_sentences=True),
+                body=fake.paragraph(random.randint(2, 30), variable_nb_sentences=True),
                 created_at=timezone.make_aware(fake.date_time_this_decade()),
             )
             answer_batch.append(answer)
