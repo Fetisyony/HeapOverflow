@@ -2,7 +2,9 @@ from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
 from .models import Question, Profile, Tag, Answer
 from django.db.models import Sum
-
+from django.contrib import auth
+from django.contrib.auth.decorators import login_required
+from .forms import LoginForm
 
 
 def paginate(objects_list, request, per_page=4):
@@ -87,6 +89,7 @@ def tag(request, tag_name):
         }
     )
 
+@login_required
 def settings(request):
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
@@ -139,6 +142,7 @@ def question_not_found(request):
             }
         )
 
+@login_required
 def ask_question(request):
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
@@ -169,6 +173,14 @@ def login(request):
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
+    if (request.method == 'POST'):
+        form = LoginForm(request.POST)
+        if (form.is_valid()):
+            user = auth.authenticate(request, **form.cleaned_data)
+            if (user):
+                auth.login(request, user)
+                return redirect('/settings')
+
     return render(
         request,
         template_name="login.html",
@@ -177,3 +189,7 @@ def login(request):
             'top_users': top_users
         }
     )
+
+def logout(request):
+    auth.logout(request)
+    return redirect('/')

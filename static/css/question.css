@@ -55,6 +55,7 @@
 }
 
 .circle-button {
+    pointer-events: none;
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -69,10 +70,12 @@
 }
 
 .circle-button:hover {
+    pointer-events: none;
     background-color: #66f487; /* Darker green on hover */
 }
 
 .circle-button-empty {
+    pointer-events: none;
     border-radius: 50%;
     width: 40px;
     height: 40px;
