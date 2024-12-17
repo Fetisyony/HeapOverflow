@@ -142,4 +142,5 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/login'
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+

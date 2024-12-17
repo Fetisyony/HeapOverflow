@@ -172,6 +172,7 @@ def question(request, question_id):
         }
     )
 
+
 def question_not_found(request):
     if (request.user.is_authenticated):
         profile = get_object_or_404(Profile, user=request.user)
@@ -198,12 +199,13 @@ def ask_question(request):
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
-    form = NewQuestionForm
     if (request.method == 'POST'):
         form = NewQuestionForm(request.POST)
         if (form.is_valid()):
             new_question_id = form.save(profile)
             return redirect(reverse('question', args=[new_question_id]))
+    else:
+        form = NewQuestionForm()
 
     return render(
         request,
@@ -260,8 +262,7 @@ def login(request):
                 if (form.cleaned_data['remember']):
                     request.session.set_expiry(1209600)
                 else:
-                    request.session.set_expiry(1)
-                
+                    request.session.set_expiry(0)
                 return redirect(redirect_to)
             else:
                 form.add_error(None, 'Invalid username or password')
@@ -275,7 +276,7 @@ def login(request):
             'popular_tags': popular_tags,
             'top_users': top_users,
             'form': form,
-            'continue': redirect_to
+            'continue': redirect_to,
         }
     )
 
