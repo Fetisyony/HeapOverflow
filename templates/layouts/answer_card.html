@@ -2,7 +2,7 @@
 
 <link href="{% static 'css/vote_container.css' %}" rel="stylesheet">
 
-<div class="row">
+<div class="row" id="answer-{{ answer.id }}">
     <div class="d-flex col-1 justify-content-center align-items-center">
         <!-- green round button that shows that answer is correct -->
         <!-- the symbol of che -->
@@ -28,12 +28,19 @@
                         </div>
 
                         <div class="answer-image-container mb-3">
-                            <img src="{{ answer.user.profile_picture.url }}" alt="Avatar"
-                                class="img-fluid answer_profile_image">
+                            {% if answer.user.profile_picture %}
+                                <img src="{{ answer.user.profile_picture.url }}" alt="Avatar"
+                                    class="img-fluid answer_profile_image">
+                            {% else %}
+                                <img src="{{ default_profile_image }}" alt="Avatar"
+                                    class="img-fluid answer_profile_image">
+                            {% endif %}
                         </div>
 
                         {% include 'layouts/vote_container.html' with votes_count=answer.votes_count %}
                     </div>
+                </div>
+                <div class="d-flex col-1 align-items-center justify-content-center">
                 </div>
                 <div class="d-flex col flex-column">
                     <h6 class="card-subtitle mb-2 text-body-secondary mt-2">{{ answer.body }}</h6>

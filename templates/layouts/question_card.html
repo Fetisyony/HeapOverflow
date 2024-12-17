@@ -7,8 +7,13 @@
     <div class="card-body">
         <div class="row">
             <div class="d-flex col-2 flex-column align-items-center gap-2 justify-content-center mb-2">
-                <img src="{{ question.user.profile_picture.url }}" alt="Avatar"
+                {% if question.user.profile_picture %}
+                    <img src="{{ question.user.profile_picture.url }}" alt="Profile Image"
                         class="img-fluid question_profile_image">
+                {% else %}
+                    <img src="{{ default_profile_image }}" alt="Profile Image"
+                        class="img-fluid question_profile_image">
+                {% endif %}
                 {% include 'layouts/vote_container.html' with votes_count=question.votes_count %}
             </div>
             <div class="d-flex col-9 flex-column">

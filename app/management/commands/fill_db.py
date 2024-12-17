@@ -2,7 +2,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.core.files import File
-from django.db import transaction
 from django.utils import timezone
 from app.models import Question, Answer, QuestionVote, AnswerVote, Tag, QuestionTag, Profile, Profile
 
@@ -17,6 +16,8 @@ fake = Faker()
 DEFAULT_POPULATION_VALUE = 10
 
 PROFILE_IMG_PATH = os.path.join(settings.MEDIA_ROOT, 'images')
+
+pull_of_tags = set(["python", "windows", "shell", "ruby", "testing", "django", "flask", "sql", "nosql", "docker", "kubernetes", "aws", "azure", "gcp", "devops", "git", "github", "gitlab", "bitbucket", "javascript", "typescript", "react", "angular", "vue", "nodejs", "express", "mongodb", "postgresql", "mysql", "sqlite", "redis", "rabbitmq", "kafka", "nginx", "apache", "gunicorn", "uwsgi", "jinja", "html", "css", "sass", "less", "bootstrap", "tailwind", "webpack", "gulp", "grunt", "babel", "eslint", "prettier", "jest", "mocha", "chai", "cypress", "selenium", "webdriver", "appium", "jenkins", "circleci", "bitbucket-pipelines", "heroku", "netlify", "vercel", "digitalocean", "linode", "aws-lambda", "azure-functions", "google-cloud-functions", "serverless", "nextjs", "nuxtjs", "deno", "nestjs", "wordpress", "joomla", "api", "magento", "shopify", "woocommerce", "prestashop", "opencart", "bigcommerce", "salesforce", "sap", "oracle", "microsoft", "android", "ios", "flutter", "react-native", "ionic", "cordova", "phonegap", "xamarin", "unity", "unreal", "godot", "blender", "maya", "3ds-max", "autocad", "solidworks"])
 
 
 class Command(BaseCommand):
@@ -196,8 +197,6 @@ class Command(BaseCommand):
         AnswerVote.objects.bulk_create(answer_like_batch)
 
     def generate_tags(self):
-        pull_of_tags = set(["python", "windows", "shell", "ruby", "testing", "django", "flask", "sql", "nosql", "docker", "kubernetes", "aws", "azure", "gcp", "devops", "git", "github", "gitlab", "bitbucket", "javascript", "typescript", "react", "angular", "vue", "nodejs", "express", "mongodb", "postgresql", "mysql", "sqlite", "redis", "rabbitmq", "kafka", "nginx", "apache", "gunicorn", "uwsgi", "jinja", "html", "css", "sass", "less", "bootstrap", "tailwind", "webpack", "gulp", "grunt", "babel", "eslint", "prettier", "jest", "mocha", "chai", "cypress", "selenium", "webdriver", "appium", "jenkins", "circleci", "bitbucket-pipelines", "heroku", "netlify", "vercel", "digitalocean", "linode", "aws-lambda", "azure-functions", "google-cloud-functions", "serverless", "nextjs", "nuxtjs", "deno", "nestjs", "wordpress", "joomla", "api", "magento", "shopify", "woocommerce", "prestashop", "opencart", "bigcommerce", "salesforce", "sap", "oracle", "microsoft", "android", "ios", "flutter", "react-native", "ionic", "cordova", "phonegap", "xamarin", "unity", "unreal", "godot", "blender", "maya", "3ds-max", "autocad", "solidworks"])
-
         tags = []
         for tag_name in tqdm(pull_of_tags, desc=self.format_description("Creating Tags")):
             tags.append(Tag(name=tag_name))

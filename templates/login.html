@@ -1,5 +1,6 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
+{% load bootstrap5 %}
 
 {% block tab_title %}Ask Pumpkin: login{% endblock %}
 {% block extra_css %}
@@ -8,31 +9,22 @@
 
 {% block content %}
     <div class="login">
-        <form class="d-flex flex-column gap-1 log_form" action="{% url 'login' %}" method="POST">
-            <div class="d-flex align-items-center mb-4 ms-1">
-                <h2>Log In</h2>
-            </div>
+        <div class="d-flex flex-column align-items-center mb-4 ms-1">
+            <form class="d-flex flex-column gap-1" action="{% url 'login' %}" method="POST">
+                {% csrf_token %}
+                <div class="d-flex align-items-center mb-4 ms-1">
+                    <h2>Log In</h2>
+                </div>
+                
+                <input type="hidden" name="continue" value="{{ continue }}">
+                {% bootstrap_form form %}
 
-            <div class="form-floating">
-                <input name="username" type="text" class="form-control" id="username-input" placeholder="Username">
-                <label for="username-input">Login</label>
-            </div>
-            <div class="form-floating">
-                <input name="password" type="password" class="form-control" id="password-input" placeholder="Password">
-                <label for="password-input">Password</label>
-            </div>
-
-            <div class="form-check text-start my-2">
-                <input name="remember-me" class="form-check-input" type="checkbox" id="remember-me" style="cursor: pointer;">
-                <label class="form-check-label" for="remember-me" style="cursor: pointer;">
-                    Remember me
-                </label>
-            </div>
-            <button class="btn btn-primary w-100 py-1" type="submit">Sign in</button>
-            <div class="mt-2">
-                <p>or</p>
-            </div>
-            <button class="btn btn-outline-primary w-100 py-1" type="submit">Create new account</button>
-        </form>
+                <button class="btn btn-primary w-100 py-1" type="submit">Sign in</button>
+                <div class="mt-2">
+                    <p>or</p>
+                </div>
+            </form>
+            <a href="{% url 'register' %}" class="btn btn-outline-primary w-100 py-1">Create new account</a>
+        </div>    
     </div>
 {% endblock %}

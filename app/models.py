@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Sum
+from django.db.models.functions import Coalesce
 
 
 class QuestionManager(models.Manager):
@@ -8,7 +9,7 @@ class QuestionManager(models.Manager):
         return self.get(pk=question_id)
 
     def get_hot_questions(self):
-        return self.annotate(votes_count=Sum('votes__vote_type')).order_by('-votes_count')
+        return self.annotate(votes_count_tech=Coalesce(Sum('votes__vote_type'), 0)).order_by('-votes_count_tech')
 
     def get_questions_by_tag_name(self, tag_name):
         return self.filter(tags__name=tag_name).order_by('-created_at')
@@ -27,8 +28,8 @@ class TagManager(models.Manager):
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', null=True)
 
     objects = ProfileManager()
 
@@ -47,7 +48,7 @@ class Question(models.Model):
     title = models.CharField(max_length=255)
     body = models.TextField()
     tags = models.ManyToManyField(Tag, through='QuestionTag', related_name='questions')
-    created_at = models.DateTimeField(default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     objects = QuestionManager()
 
@@ -62,7 +63,7 @@ class Answer(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='answers')
     body = models.TextField()
     is_accepted = models.BooleanField(default=False)
-    created_at = models.DateTimeField(default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     objects = AnswerManager()
 
@@ -73,7 +74,7 @@ class QuestionVote(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='votes')
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='voted_questions')
     vote_type = models.IntegerField(choices=[(1, 'Like'), (-1, 'Dislike')])
-    created_at = models.DateTimeField(default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('question', 'user')
@@ -85,7 +86,7 @@ class AnswerVote(models.Model):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='votes')
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='voted_answers')
     vote_type = models.IntegerField(choices=[(1, 'Like'), (-1, 'Dislike')])
-    created_at = models.DateTimeField(default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('answer', 'user')

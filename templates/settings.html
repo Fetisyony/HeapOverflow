@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block page_content_title %}
-    Settings: Mr Igor
+    Settings
 {% endblock %}
 
 {% block content %}
@@ -19,7 +19,7 @@
                 <h6>Login</h6>
             </div>
             <div class="col-5">
-                <input type="text" class="form-control" placeholder="Enter text here" />
+                <input type="text" class="form-control" readonly value="{{ request.user.username }}">
             </div>
         </div>
         <div class="row d-flex-row align-items-baseline">
@@ -27,15 +27,7 @@
                 <h6>Email</h6>
             </div>
             <div class="col-5">
-                <input type="text" class="form-control" placeholder="Enter text here" />
-            </div>
-        </div>
-        <div class="row d-flex-row align-items-baseline">
-            <div class="col-2">
-                <h6>Nickname</h6>
-            </div>
-            <div class="col-5">
-                <input type="text" class="form-control" placeholder="Enter text here" />
+                <input type="text" class="form-control" readonly value="{{ request.user.email }}">
             </div>
         </div>
         <div class="row d-flex-row align-items-center">
@@ -44,8 +36,13 @@
             </div>
             <div class="col-5">
                 <div class="d-flex flex-row align-items-center">
-                    <img src="{% static 'img/Avatar.jpg' %}" alt="upload Avatar" id="img"
-                        class="rounded-circle img-thumbnail profile-image-upload mb-2 me-3" />
+                    {% if current_profile.profile_picture %}
+                        <img src="{{ current_profile.profile_picture.url }}" alt="Profile Image"
+                            class="rounded-circle img-thumbnail profile-image-upload mb-2 me-3">
+                    {% else %}
+                        <img src="{{ default_profile_image }}" alt="Profile Image"
+                            class="rounded-circle img-thumbnail profile-image-upload mb-2 me-3">
+                    {% endif %}
                     <div id="fileInputWrapper">
                         <button type="button" class="btn btn-outline-secondary">
                             Choose file

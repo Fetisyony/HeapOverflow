@@ -1,8 +1,10 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
+{% load bootstrap5 %}
 
 {% block tab_title %}
     AskPumpkin: {{ question.title }}
+    {{ get_login_url_with_continue }}
 {% endblock %}
 
 {% block extra_css %}
@@ -23,8 +25,13 @@
                 </div>
                 <div class="image-container mb-2">
                     <div class="img-responsive-container">
-                        <img src="{% static 'img/AnswerProfile1.jpg' %}" alt="Avatar"
-                            class="img-fluid question_profile_image">
+                        {% if question.user.profile_picture %}
+                            <img src="{{ question.user.profile_picture.url }}" alt="Profile Image"
+                                class="img-fluid question_profile_image">
+                        {% else %}
+                            <img src="{{ default_profile_image }}" alt="Profile Image"
+                                class="img-fluid question_profile_image">
+                        {% endif %}
                     </div>
                 </div>
                 {% include 'layouts/vote_container.html' with votes_count=question.votes_count %}
@@ -50,37 +57,57 @@
         </div>
     </div>
     <hr class="my-4">
-    <!-- list of answers like cards -->
-    <div class="d-flex flex-column gap-3 cards_width mb-5">
-        {% for answer in answers %}
+
+    <div class="d-flex flex-column gap-3 cards_width mb-5 ms-2">
+        <div class="row">
+            <div class="col-1 d-flex justify-content-center">
+            </div>
+            <div class="col-8">
+                {% if page_obj.object_list %}
+                    <h5 class="mb-3 text-body-secondary">Answers</h5>
+                {% else %}
+                    <h5 class="mb-3 text-body-secondary">No answers yet</h5>
+                {% endif %}
+            </div>
+        </div>
+
+        {% for answer in page_obj.object_list %}
             {% include 'layouts/answer_card.html' %}
         {% endfor %}
     </div>
 
-    <div class="row">
-        <div class="col-1 d-flex justify-content-center flex-column">
+    {% if page_obj.has_other_pages %}
+        <div class="row">
+            <div class="col-1 d-flex justify-content-center">
+            </div>
+            <div class="col-8 mb-4 ms-2">
+                {% include 'layouts/pagination.html' %}
+            </div>
         </div>
-        <div class="col-8">
-            {% include 'layouts/pagination.html' %}
-        </div>
-    </div>
+    {% endif %}
 
-    <!-- create input field -->
     <div class="d-flex flex-column gap-3 mb-5">
         <div class="row">
             <div class="col-1 d-flex justify-content-center flex-column">
             </div>
-            <div class="col-8">
-                <div class="d-flex flex-column gap-2 mb-3">
-                    <h6 class="mb-2 text-body-secondary">Your answer</h6>
-                    <textarea class="form-control description-textarea" placeholder="Detailed description"
-                        aria-label="Description"></textarea>
-                </div>
+            <form method="POST" action="{% url 'question' question.id %}">
+                <div class="col-8">
+                    <div class="d-flex flex-column gap-2 mb-3">
+                        <h6 class="mb-2 text-body-secondary">Your answer</h6>
+                        {% csrf_token %}
+                        {{ form.body }}
+                        {% for error in form.body.errors %}
+                            <div class="invalid-feedback error-message" id="passwordFeedback">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
 
-                <div class="d-flex justify-content-start">
-                    <button type="button" class="btn btn-primary">Submit</button>
+                    <div class="d-flex justify-content-start">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 {% endblock %}
