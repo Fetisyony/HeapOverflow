@@ -3,6 +3,7 @@ from .models import Answer, Profile, Question, Tag
 from django.contrib.auth.models import User
 from .management.commands.fill_db import pull_of_tags
 
+
 class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
@@ -15,7 +16,7 @@ class LoginForm(forms.Form):
             raise forms.ValidationError("Please fill out that field")
 
         return username
-    
+
     def clean_password(self):
         password = self.cleaned_data['password'].strip()
 
@@ -28,7 +29,54 @@ class LoginForm(forms.Form):
         cleaned_data = super().clean()
 
         return cleaned_data
-    
+
+class UserEditForm(forms.ModelForm):
+    username = forms.CharField(
+        max_length=50,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+        })
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+        })
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_username(self):
+        username = self.cleaned_data['username'].strip()
+        if (not username):
+            raise forms.ValidationError("Please fill out that field")
+        if User.objects.filter(username=username).exclude(id=self.user.id).exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip()
+        if (not email):
+            raise forms.ValidationError("Please fill out that field")
+        if User.objects.filter(email=email).exclude(id=self.user.id).exists():
+            raise forms.ValidationError("A user with that email already exist.")
+        return email
+
+    class Meta:
+        model = User
+        fields = ("username", "email")
+
+class ProfileEditFrom(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['profile_picture'].required = False
+
+    class Meta:
+        model = Profile
+        fields = ('profile_picture',)
+
 class RegisterForm(forms.ModelForm):
     username = forms.CharField(
         required=True,
@@ -62,8 +110,16 @@ class RegisterForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = []
-    
+        fields = ['username', 'email', 'password', 'repeat_password', 'profile_picture']
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip()
+        if (not email):
+            raise forms.ValidationError("Please fill out that field")
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("User with this email already exists.")
+        return email
+
     def clean_username(self):
         username = self.cleaned_data['username'].strip()
         if (not username):
@@ -71,46 +127,47 @@ class RegisterForm(forms.ModelForm):
         if User.objects.filter(username=username).exists():
             raise forms.ValidationError("User with this username already exists.")
         return username
-    
+
     def clean_password(self):
         password = self.cleaned_data.get('password')
 
         if (len(password) < 8):
             raise forms.ValidationError("Password must be at least 8 characters long")
-        
+
         if (not password):
             raise forms.ValidationError("Please fill out that field")
 
         return password
-    
+
     def clean_repeat_password(self):
         password = self.cleaned_data.get('password')
         repeat_password = self.cleaned_data.get('repeat_password')
-        
+
         if (not repeat_password):
             raise forms.ValidationError("Please fill out that field")
         if password != repeat_password:
             raise forms.ValidationError("Passwords do not match.")
         return repeat_password
-    
+
     def clean(self):
         cleaned_data = super().clean()
 
         return cleaned_data
 
-    def save(self, commit=True):
+    def save(self, request):
         user = User(
             username=self.cleaned_data['username'],
             email=self.cleaned_data['email']
         )
         user.set_password(self.cleaned_data['password'])
+        user.save()
 
-        if commit:
-            user.save()
-            profile = super().save(commit=False)
-            profile.user = user
-            profile.save()
-        
+        profile = super().save(commit=False)
+        profile.user = user
+
+        profile.profile_picture = request.FILES.get('profile_picture', None)
+
+        profile.save()
         return user
 
 class AnswerForm(forms.ModelForm):
@@ -147,7 +204,6 @@ class AnswerForm(forms.ModelForm):
         answer.save()
 
         return answer.id
-
 
 class NewQuestionForm(forms.ModelForm):
     title = forms.CharField(
@@ -200,9 +256,9 @@ class NewQuestionForm(forms.ModelForm):
 
         if (len(unique_tag_names) != len(tag_names)):
             raise forms.ValidationError("Tags must be unique")
-        if (len(unique_tag_names) < 3):
-            raise forms.ValidationError("Put here at least 3 tags separated by space")
-        
+        if (len(unique_tag_names) > 3):
+            raise forms.ValidationError("Too many tags, put no more than 3")
+
         for tag_name in tag_names:
             if (tag_name not in pull_of_tags):
                 raise forms.ValidationError(f"Unknown tag: {tag_name}")

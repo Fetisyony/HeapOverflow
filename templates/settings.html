@@ -13,13 +13,19 @@
 {% endblock %}
 
 {% block content %}
-    <div class="d-flex flex-column gap-4 mb-4">
+    <form class="d-flex flex-column gap-4 mb-4" action="{% url 'settings' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
         <div class="row d-flex-row align-items-baseline">
             <div class="col-2">
                 <h6>Login</h6>
             </div>
             <div class="col-5">
-                <input type="text" class="form-control" readonly value="{{ request.user.username }}">
+                {{ user_form.username }}
+                {% for error in user_form.username.errors %}
+                    <div class="invalid-feedback error-message" id="passwordFeedback" style="display: block;">
+                        {{ error }}
+                    </div>
+                {% endfor %}
             </div>
         </div>
         <div class="row d-flex-row align-items-baseline">
@@ -27,7 +33,12 @@
                 <h6>Email</h6>
             </div>
             <div class="col-5">
-                <input type="text" class="form-control" readonly value="{{ request.user.email }}">
+                {{ user_form.email }}
+                {% for error in user_form.email.errors %}
+                    <div class="invalid-feedback error-message" id="passwordFeedback" style="display: block;">
+                        {{ error }}
+                    </div>
+                {% endfor %}
             </div>
         </div>
         <div class="row d-flex-row align-items-center">
@@ -44,21 +55,18 @@
                             class="rounded-circle img-thumbnail profile-image-upload mb-2 me-3">
                     {% endif %}
                     <div id="fileInputWrapper">
-                        <button type="button" class="btn btn-outline-secondary">
-                            Choose file
-                        </button>
+                        <input type="file" name="profile_picture" accept="image/*" class="form-control" id="id_profile_picture">
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <!-- button to save -->
-    <div class="row d-flex-row align-items-baseline">
-        <div class="col-2">
+        
+        <div class="row d-flex-row align-items-baseline">
+            <div class="col-2">
+            </div>
+            <div class="col-5">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
         </div>
-        <div class="col-5">
-            <button type="button" class="btn btn-primary">Save</button>
-        </div>
-    </div>
-
+    </form>
 {% endblock %}

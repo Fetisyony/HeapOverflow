@@ -6,12 +6,12 @@
   object-fit: cover;
 }
 .image-container {
-  width: 130px; /* Same as your image width */
-  height: 130px; /* Same as your image height */
+  width: 130px;
+  height: 130px;
 }
 .img-responsive-container {
-    width: 100%; /* Ensure container takes available width */
-    height: auto;  /* Maintain aspect ratio */
+  width: 100%;
+  height: auto;
 }
 
 .question_rate {
@@ -19,7 +19,7 @@
 }
 
 .custom-card {
-    border-radius: 15px !important; 
+  border-radius: 15px !important;
 }
 
 .answer_profile_image {
@@ -30,8 +30,8 @@
   object-fit: cover;
 }
 .answer-image-container {
-  width: 100px; /* Same as your image width */
-  height: 100px; /* Same as your image height */
+  width: 100px;
+  height: 100px;
 }
 .answer_rate {
   width: 100px;
@@ -43,49 +43,40 @@
 }
 
 .tag-link {
-    border-radius: 5px;
-    color: #555; /* Dark gray text color */
-    font-weight: bold;
-    font-size: 0.8em;
-    background-color: #f0f0f0; /* Light gray background */
-    padding: 1px 10px; /* Adjust padding as needed */
-    margin-right: 5px; /* Adjust spacing between words */
-    text-decoration: none; /* Remove default link underline */
-    /* making corners round */
+  border-radius: 5px;
+  color: #555;
+  font-weight: bold;
+  font-size: 0.8em;
+  background-color: #f0f0f0;
+  padding: 1px 10px;
+  margin-right: 5px;
+  text-decoration: none;
 }
 
-.circle-button {
-    pointer-events: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-    background-color: #6aff8c; 
-    color: white; 
-    border: 1px solid #6aff8c;
-    transition: background-color 0.3s ease; /* Add transition */
-}
-
-.circle-button:hover {
-    pointer-events: none;
-    background-color: #66f487; /* Darker green on hover */
+.circle-button-accepted {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  background-color: #6aff8c;
+  color: white;
+  border: 1px solid #6aff8c;
+  transition: background-color 0.3s ease;
 }
 
 .circle-button-empty {
-    pointer-events: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    border: 1px solid #cecece;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-    background-color: #fff;
-    cursor: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  border: 1px solid #cecece;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  background-color: #fff;
 }
 
 .description-textarea {

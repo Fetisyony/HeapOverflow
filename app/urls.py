@@ -13,4 +13,10 @@ urlpatterns = [
     path('question/<int:question_id>', views.question, name="question"),
     path('tag/<tag_name>', views.tag, name="tag"),
     path('logout/', views.logout, name='logout'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('<int:answer_id>/vote_answer', views.vote_answer, name='vote_answer'),
+    path('<int:question_id>/vote_question', views.vote_question, name='vote_question'),
+    path('<int:answer_id>/set_correct', views.tick_correct, name='tick_correct'),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

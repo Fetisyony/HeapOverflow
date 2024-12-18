@@ -4,7 +4,7 @@
 <link href="{% static 'css/question_card.css' %}" rel="stylesheet">
 
 <div class="card w-100" style="width: 18rem; padding-bottom: 10px; padding-top: 10px;">
-    <div class="card-body">
+    <div class="card-body question-card" data-question-id="{{ question.id }}">
         <div class="row">
             <div class="d-flex col-2 flex-column align-items-center gap-2 justify-content-center mb-2">
                 {% if question.user.profile_picture %}

@@ -19,7 +19,7 @@
 {% block content %}
     <div class="row">
         <div class="col-3 d-flex justify-content-center flex-column">
-            <div class="d-flex flex-column gap-2 justify-content-center align-items-center">
+            <div class="d-flex flex-column gap-2 justify-content-center align-items-center question-block" data-question-id="{{ question.id }}">
                 <div>
                     <h6 class="card-subtitletext-body-secondary">{{ question.user.user.username }}</h6>
                 </div>
@@ -123,4 +123,9 @@
             {% endif %}
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/vote.js' %}"></script>
+<script src="{% static 'js/select_correct.js' %}"></script>
 {% endblock %}

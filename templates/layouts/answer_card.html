@@ -2,18 +2,15 @@
 
 <link href="{% static 'css/vote_container.css' %}" rel="stylesheet">
 
-<div class="row" id="answer-{{ answer.id }}">
+<div class="row answer-card-cls" id="answer-{{ answer.id }}" data-answer-id="{{ answer.id }}">
     <div class="d-flex col-1 justify-content-center align-items-center">
-        <!-- green round button that shows that answer is correct -->
-        <!-- the symbol of che -->
         <div class="d-flex justify-content-center align-items-center">
-            <!-- is is_accepted is true -->
             {% if answer.is_accepted  %}
-                <button type="button" class="btn btn-success circle-button">
+                <button type="button" class="circle-button-accepted is-accepted-button" {% if not is_author %} disabled {% endif %}>
                     <i class="fas fa-check"></i>
                 </button>
             {% else %}
-                <button type="button" class="circle-button-empty">
+                <button type="button" class="circle-button-empty is-accepted-button" {% if not is_author %} disabled {% endif %}>
                 </button>
             {% endif %}
         </div>

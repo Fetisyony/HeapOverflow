@@ -4,22 +4,23 @@
     justify-content: center;
     font-family: Arial, sans-serif;
 }
-.vote-controller button {
+.vote-button {
     min-width: 32px;
     min-height: 32px;
     max-width: 32px;
     max-height: 32px;
 
-    background-color: #eaeaea;
+    /* to make important background-color: ; */
+    background-color: #fafafa;
     color: black;
-    border: 1px solid #dbdbdb;
+    border: 1px solid #bebebe;
     border-radius: 30%;
 
     --bs-btn-padding-x: 0;
     --bs-btn-padding-y: 0;
 }
-.vote-controller button:hover {
-    background-color: #c0c0c0;
+.vote-button:hover {
+    background-color: #e1e1e1;
 }
 .vote-count {
     width: 60px;

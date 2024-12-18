@@ -16,7 +16,7 @@ class QuestionManager(models.Manager):
 
 class AnswerManager(models.Manager):
     def get_answers_by_question_id(self, question_id):
-        return self.filter(question_id=question_id).annotate(votes_count=models.Count('votes')).order_by('-is_accepted', '-votes_count')
+        return self.filter(question_id=question_id).annotate(votes_count_tech=Coalesce(Sum('votes__vote_type'), 0)).order_by('-is_accepted', '-votes_count_tech')
 
 class ProfileManager(models.Manager):
     def get_top_n_users_by_number_of_answers(self, n):
@@ -29,7 +29,7 @@ class TagManager(models.Manager):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
-    profile_picture = models.ImageField(upload_to='profile_pics/', null=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
 
     objects = ProfileManager()
 
@@ -66,6 +66,9 @@ class Answer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = AnswerManager()
+
+    def votes_count(self):
+        return self.votes.aggregate(votes_count=Sum('vote_type'))['votes_count'] or 0
 
     def __str__(self):
         return f"Answer to: {self.question.title}"

@@ -1,15 +1,18 @@
+import json
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from .models import Question, Profile, Tag, Answer
 from django.db.models import Sum
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from .forms import AnswerForm, LoginForm, NewQuestionForm, RegisterForm
+from .forms import AnswerForm, LoginForm, NewQuestionForm, ProfileEditFrom, RegisterForm, UserEditForm
 from django.views.decorators.csrf import csrf_protect as ccrf_protect
 from django.utils import timezone
 from askme_fetisov.settings import MEDIA_URL
+from django.views.decorators.http import require_POST
 import os
 
 
@@ -113,10 +116,25 @@ def tag(request, tag_name):
 
 @login_required
 def settings(request):
+    profile = get_object_or_404(Profile, user=request.user)
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
-    profile = get_object_or_404(Profile, user=request.user)
+    if (request.method == 'POST'):
+        user_form = UserEditForm(request.POST, instance=request.user, user=request.user)
+        profile_form = ProfileEditFrom(request.POST, request.FILES, instance=request.user.profile)
+
+        if (user_form.is_valid() and profile_form.is_valid()):
+            user_form.save()
+            profile_form.save()
+            return redirect(reverse("settings"))
+        else:
+            print("error")
+            print(user_form["username"].errors)
+    else:
+        user_form = UserEditForm(instance=request.user, user=request.user)
+        profile_form = ProfileEditFrom(instance=request.user.profile)
+
     return render(
         request,
         template_name="settings.html",
@@ -124,6 +142,8 @@ def settings(request):
             'popular_tags': popular_tags,
             'top_users': top_users,
             'current_profile': profile,
+            'user_form': user_form,
+            'profile_form': profile_form,
         }
     )
 
@@ -133,7 +153,7 @@ def question(request, question_id):
     else:
         profile = None
 
-    if (question_id <= 0) or (question_id > Question.objects.count()):
+    if (question_id <= 0) or (not Question.objects.filter(id=question_id).exists()):
         return question_not_found(request)
 
     popular_tags = Tag.objects.get_popular_n_tags()
@@ -158,6 +178,10 @@ def question(request, question_id):
     else:
         form = AnswerForm
 
+    current_user_is_author = False
+    if (profile):
+        current_user_is_author = Question.objects.get_question_by_id(question_id).user == profile
+
     return render(
         request,
         template_name="question.html",
@@ -169,9 +193,9 @@ def question(request, question_id):
             'top_users': top_users,
             'current_profile': profile,
             'form': form,
+            'is_author': current_user_is_author,
         }
     )
-
 
 def question_not_found(request):
     if (request.user.is_authenticated):
@@ -225,13 +249,22 @@ def register(request):
     popular_tags = Tag.objects.get_popular_n_tags()
     top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
-    form = RegisterForm()
     if (request.method == 'POST'):
-        form = RegisterForm(request.POST)
+        form = RegisterForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            form.save(request=request)
+
+            user = auth.authenticate(request, **form.cleaned_data)
+            if (user):
+                print("Logging in...")
+                auth.login(request, user)
+                request.session.set_expiry(1209600)
+            else:
+                form.add_error(None, 'Invalid username or password')
             messages.success(request, 'Account created successfully! Please log in.')
             return redirect(reverse('index'))
+    else:
+        form = RegisterForm()
 
     return render(
         request,
@@ -244,7 +277,9 @@ def register(request):
     )
 
 def login(request):
-    redirect_to = request.GET.get('continue', '/')
+    redirect_to = request.GET.get('continue', None)
+    if (not redirect_to):
+        redirect_to = request.GET.get('next', '/')
 
     if request.user.is_authenticated:
         return redirect(reverse('index'))
@@ -283,3 +318,60 @@ def login(request):
 def logout(request):
     auth.logout(request)
     return redirect(request.META.get('HTTP_REFERER'))
+
+@require_POST
+@login_required
+def vote_answer(request, answer_id):
+    body = json.loads(request.body)
+    vote_type = 1 if body.get('type') == 'Like' else -1
+    opposite_vote_type = -vote_type
+
+    profile = get_object_or_404(Profile, user=request.user)
+    current_answer = Answer.objects.get(id=answer_id)
+
+    if (current_answer.votes.filter(user=profile, vote_type=vote_type).exists()):
+        current_answer.votes.filter(user=profile, vote_type=vote_type).delete()
+    else:
+        if (current_answer.votes.filter(user=profile, vote_type=opposite_vote_type).exists()):
+            current_answer.votes.filter(user=profile, vote_type=opposite_vote_type).delete()
+        current_answer.votes.create(user=profile, vote_type=vote_type)
+
+    vote_count = current_answer.votes_count()
+    return JsonResponse({'vote_count': vote_count})
+
+@require_POST
+@login_required
+def vote_question(request, question_id):
+    body = json.loads(request.body)
+    vote_type = 1 if body.get('type') == 'Like' else -1
+    opposite_vote_type = -vote_type
+
+    profile = get_object_or_404(Profile, user=request.user)
+    current_question = Question.objects.get(id=question_id)
+
+    if (current_question.votes.filter(user=profile, vote_type=vote_type).exists()):
+        current_question.votes.filter(user=profile, vote_type=vote_type).delete()
+    else:
+        if (current_question.votes.filter(user=profile, vote_type=opposite_vote_type).exists()):
+            current_question.votes.filter(user=profile, vote_type=opposite_vote_type).delete()
+        current_question.votes.create(user=profile, vote_type=vote_type)
+
+    vote_count = current_question.votes_count()
+    return JsonResponse({'vote_count': vote_count})
+
+@login_required
+@require_POST
+def tick_correct(request, answer_id):
+    current_answer = get_object_or_404(Answer, id=answer_id)
+    current_question = current_answer.question
+
+    if (current_question.user == request.user.profile):
+        if (current_answer.is_accepted):
+            current_answer.is_accepted = False
+        else:
+            current_answer.is_accepted = True
+        current_answer.save()
+    else:
+        print("Not authorized")
+
+    return JsonResponse({'is_accepted': current_answer.is_accepted})
