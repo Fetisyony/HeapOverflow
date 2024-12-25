@@ -13,17 +13,12 @@ from cent import Client, PublishRequest
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from .models import Question
 from django.db.models import F
+from django.conf import settings
 
-
-CENTRIFUGO_API_KEY = "your_api_key"
-CENTRIFUGO_SECRET = "your_super_secret_key"
-CENTRIFUGO_WS_URL = "ws://localhost:8000/connection/websocket"
-CENTRIFUGO_API_URL = "http://localhost:8000/api"
 
 
 def search(request):
     query = request.GET.get('q')
-    print("AAAAAAAAAAAAAAAAAA")
     if query:
         search_query = SearchQuery(query)
         search_results = Question.objects.annotate(
@@ -145,7 +140,7 @@ def tag(request, tag_name):
     )
 
 @login_required
-def settings(request):
+def profile_edit(request):
     profile = get_object_or_404(Profile, user=request.user)
 
     if (request.method == 'POST'):
@@ -155,16 +150,16 @@ def settings(request):
         if (user_form.is_valid() and profile_form.is_valid()):
             user_form.save()
             profile_form.save()
-            return redirect(reverse("settings"))
+            return redirect(reverse("profile_edit"))
         else:
-            print(user_form["username"].errors)
+            messages.error(request, 'Invalid data')
     else:
         user_form = UserEditForm(instance=request.user, user=request.user)
         profile_form = ProfileEditFrom(instance=request.user.profile)
 
     return render(
         request,
-        template_name="settings.html",
+        template_name="profile_edit.html",
         context={
             'current_profile': profile,
             'user_form': user_form,
@@ -200,7 +195,7 @@ def question(request, question_id):
         if (form.is_valid()):
             new_answer_id = form.save(profile, question_id)
 
-            client = Client(CENTRIFUGO_API_URL, CENTRIFUGO_API_KEY)
+            client = Client(settings.CENTRIFUGO_API_URL, settings.CENTRIFUGO_API_KEY)
             request = PublishRequest(channel=str(question_id), data={"answer": form.cleaned_data['body'], 'answer_id': new_answer_id})
             result = client.publish(request)
 
@@ -277,7 +272,6 @@ def register(request):
 
             user = auth.authenticate(request, **form.cleaned_data)
             if (user):
-                print("Logging in...")
                 auth.login(request, user)
                 request.session.set_expiry(1209600)
             else:
@@ -386,6 +380,6 @@ def tick_correct(request, answer_id):
             current_answer.is_accepted = True
         current_answer.save()
     else:
-        print("Not authorized")
+        messages.error(request, 'You are not the author of the question')
 
     return JsonResponse({'is_accepted': current_answer.is_accepted})

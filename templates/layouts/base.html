@@ -26,7 +26,6 @@
                 <a class="navbar-brand text-start" href="{% url 'index' %}">AskPumpkin</a>
 
                 <form class="d-flex navbar-form text-center gap-2" role="search" method="GET" action="{% url 'search' %}">
-                    {% csrf_token %}
                     <input class="form-control me-2" id="search-input" type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off">
                     <ul id="suggestions" class="suggestions-list"></ul>
                     
@@ -36,7 +35,7 @@
                 
                 <div class="text-end">
                     {% if request.user.is_authenticated %}
-                        <a href="{% url 'settings' %}" style="text-decoration: none;">
+                        <a href="{% url 'profile_edit' %}" style="text-decoration: none;">
                             <div class="d-flex align-items-center profile-container" role="button">
                                 {% if current_profile.profile_picture %}
                                     <img src="{{ current_profile.profile_picture.url }}" alt="Profile Image"
@@ -126,42 +125,7 @@
     </main>
 
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
-    <script>
-        let debounceTimeout;
-        document.getElementById('search-input').addEventListener('input', function() {
-            clearTimeout(debounceTimeout);
-            const query = this.value;
-            if (query.length > 2) {
-                debounceTimeout = setTimeout(() => {
-                    fetch(`/search_suggestions?q=${query}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            const suggestions = document.getElementById('suggestions');
-                            suggestions.innerHTML = '';
-                            data.forEach(item => {
-                                const li = document.createElement('li');
-                                const link = document.createElement('a');
-                                link.textContent = item.title;
-                                link.href = `/question/${item.id}`;  // Adjust the URL path as needed
-                                li.appendChild(link);
-                                suggestions.appendChild(li);
-                            });
-                            suggestions.style.display = 'block';
-                        });
-                }, 300);  // Adjust the debounce delay as needed
-            } else {
-                document.getElementById('suggestions').style.display = 'none';
-            }
-        });
-    
-        // Optional: Hide suggestions when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!document.getElementById('search-input').contains(event.target)) {
-                document.getElementById('suggestions').style.display = 'none';
-            }
-        });
-    </script>
-    
+    <script src="{% static 'js/search_results.js' %}"></script>
 
     {% block scripts %}
     {% endblock %}

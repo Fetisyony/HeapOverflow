@@ -1,40 +1,32 @@
-const searchInput = document.getElementById('search-input');
-const suggestionsDropdown = document.getElementById('suggestions-dropdown');
-
-let timeoutId;
-
-searchInput.addEventListener('input', function(event) {
-    clearTimeout(timeoutId);
-
-    timeoutId = setTimeout(() => {
-        const query = event.target.value;
-
-        if (query.length > 2) {
-          fetch(`/search_suggestions/?q=${query}`)
-            .then(response => response.json())
-            .then(data => {
-              suggestionsDropdown.innerHTML = '';
-              if (data.suggestions.length > 0) {
-                data.suggestions.forEach(suggestion => {
-                  const suggestionItem = document.createElement('a');
-                  suggestionItem.href = suggestion.url;
-                  suggestionItem.textContent = suggestion.title;
-                  suggestionsDropdown.appendChild(suggestionItem);
-                });
-                suggestionsDropdown.style.display = 'block';
-              } else {
-                suggestionsDropdown.style.display = 'none';
-              }
-            });
-        } else {
-          suggestionsDropdown.style.display = 'none';
-        }
+let debounceTimeout;
+document.getElementById("search-input").addEventListener("input", function () {
+  clearTimeout(debounceTimeout);
+  const query = this.value;
+  if (query.length > 2) {
+    debounceTimeout = setTimeout(() => {
+      fetch(`/search_suggestions?q=${query}`)
+        .then((response) => response.json())
+        .then((data) => {
+          const suggestions = document.getElementById("suggestions");
+          suggestions.innerHTML = "";
+          data.forEach((item) => {
+            const li = document.createElement("li");
+            const link = document.createElement("a");
+            link.textContent = item.title;
+            link.href = `/question/${item.id}`;
+            li.appendChild(link);
+            suggestions.appendChild(li);
+          });
+          suggestions.style.display = "block";
+        });
     }, 300);
+  } else {
+    document.getElementById("suggestions").style.display = "none";
+  }
 });
 
-
-searchInput.addEventListener('blur', function() {
-    setTimeout(() => {
-      suggestionsDropdown.style.display = 'none';
-    }, 200);
+document.addEventListener("click", function (event) {
+  if (!document.getElementById("search-input").contains(event.target)) {
+    document.getElementById("suggestions").style.display = "none";
+  }
 });

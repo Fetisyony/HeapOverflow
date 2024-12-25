@@ -1,3 +1,4 @@
+import datetime
 from app.models import Profile, Tag
 from askme_fetisov.settings import MEDIA_URL
 import os
@@ -18,12 +19,13 @@ def get_cache(request):
         cache.set('top_users', top_users, 60)
     return {'popular_tags': popular_tags, 'top_users': top_users}
 
+
 def get_centrifugo_info(user_id):
     secret = settings.CENTRIFUGO_SECRET
     ws_url = settings.CENTRIFUGO_WS_URL
-    claims = {"sub": str(user_id), "exp": int(time.time()) + 5 * 60}
-    token = jwt.encode(claims, secret, algorithm="HS256")
-    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM3MjIiLCJleHAiOjE3MzU3NDQzOTQsImlhdCI6MTczNTEzOTU5NH0.av6TVQnidqtiCdxczRib5dnYSPY7kjjA29T89OoFzGg"
+
+    claims = {"sub": str(user_id)}
+    token = jwt.encode(claims, secret, algorithm='HS256')
     return {"token": token, "ws_url": ws_url}
 
 def topbar_default_staff(request):
