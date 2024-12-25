@@ -4,125 +4,130 @@
 {% load bootstrap5 %}
 
 {% block tab_title %}
-    AskPumpkin: {{ question.title }}
+AskPumpkin: {{ question.title }}
 {% endblock %}
 
 {% block extra_css %}
-    <link href="{% static 'css/question.css' %}" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<link href="{% static 'css/question.css' %}" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 {% endblock %}
 
 {% block page_content_title %}
-    {{ question.title }}
+{{ question.title }}
 {% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-3 d-flex justify-content-center flex-column">
-            <div class="d-flex flex-column gap-2 justify-content-center align-items-center question-block" data-question-id="{{ question.id }}">
-                <div>
-                    <h6 class="card-subtitletext-body-secondary">{{ question.user.user.username }}</h6>
+<div class="row">
+    <div class="col-3 d-flex justify-content-center flex-column">
+        <div class="d-flex flex-column gap-2 justify-content-center align-items-center question-block"
+            data-question-id="{{ question.id }}">
+            <div>
+                <h6 class="card-subtitletext-body-secondary">{{ question.user.user.username }}</h6>
+            </div>
+            <div class="image-container mb-2">
+                <div class="img-responsive-container">
+                    {% if question.user.profile_picture %}
+                    <img src="{{ question.user.profile_picture.url }}" alt="Profile Image"
+                        class="img-fluid question_profile_image">
+                    {% else %}
+                    <img src="{{ default_profile_image }}" alt="Profile Image" class="img-fluid question_profile_image">
+                    {% endif %}
                 </div>
-                <div class="image-container mb-2">
-                    <div class="img-responsive-container">
-                        {% if question.user.profile_picture %}
-                            <img src="{{ question.user.profile_picture.url }}" alt="Profile Image"
-                                class="img-fluid question_profile_image">
-                        {% else %}
-                            <img src="{{ default_profile_image }}" alt="Profile Image"
-                                class="img-fluid question_profile_image">
-                        {% endif %}
+            </div>
+            {% include 'layouts/vote_container.html' with votes_count=question.votes_count %}
+        </div>
+    </div>
+    <div class="col-8">
+        <div class="d-flex flex-column gap-2">
+            <h6 class="mb-2 text-body-secondary">{{ question.body }}</h6>
+            <div class="d-flex gap-5 mt-auto mb-1">
+                <div class="d-flex flex-row justify-content-center align-items-baseline">
+                    <div class="text me-3">
+                        <h6>Tags:</h6>
+                    </div>
+
+                    <div class="d-flex flex-row gap-3">
+                        {% for tag in question.tags.all %}
+                        {% include 'layouts/tag-element.html' %}
+                        {% endfor %}
                     </div>
                 </div>
-                {% include 'layouts/vote_container.html' with votes_count=question.votes_count %}
             </div>
+        </div>
+    </div>
+</div>
+<hr class="my-4">
+
+<div class="d-flex flex-column gap-3 cards_width mb-5">
+    <div class="row">
+        <div class="col-1 d-flex justify-content-center">
         </div>
         <div class="col-8">
-            <div class="d-flex flex-column gap-2">
-                <h6 class="mb-2 text-body-secondary">{{ question.body }}</h6>
-                <div class="d-flex gap-5 mt-auto mb-1">
-                    <div class="d-flex flex-row justify-content-center align-items-baseline">
-                        <div class="text me-3">
-                            <h6>Tags:</h6>
-                        </div>
-
-                        <div class="d-flex flex-row gap-3">
-                            {% for tag in question.tags.all %}
-                                {% include 'layouts/tag-element.html' %}
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <hr class="my-4">
-
-    <div class="d-flex flex-column gap-3 cards_width mb-5">
-        <div class="row">
-            <div class="col-1 d-flex justify-content-center">
-            </div>
-            <div class="col-8">
-                {% if page_obj.object_list %}
-                    <h5 class="mb-3 text-body-secondary">Answers</h5>
-                {% else %}
-                    <h5 class="mb-3 text-body-secondary">No answers yet</h5>
-                {% endif %}
-            </div>
-        </div>
-
-        {% for answer in page_obj.object_list %}
-            {% include 'layouts/answer_card.html' %}
-        {% endfor %}
-    </div>
-
-    {% if page_obj.has_other_pages %}
-        <div class="row">
-            <div class="col-1 d-flex justify-content-center">
-            </div>
-            <div class="col-8 mb-4">
-                {% include 'layouts/pagination.html' %}
-            </div>
-        </div>
-    {% endif %}
-
-    <div class="d-flex flex-column gap-3 mb-5">
-        <div class="row">
-            <div class="col-1 d-flex justify-content-center flex-column">
-            </div>
-
-            {% if request.user.is_authenticated %}
-                <form method="POST" action="{% url 'question' question.id %}" id="answerform">
-                    <div class="col-8">
-                        <div class="d-flex flex-column gap-2 mb-3">
-                            <h6 class="mb-2 text-body-secondary">Your answer</h6>
-                            {% csrf_token %}
-                            {{ form.body }}
-                            {% for error in form.body.errors %}
-                                <div class="invalid-feedback error-message" id="passwordFeedback">
-                                    {{ error }}
-                                </div>
-                            {% endfor %}
-                        </div>
-
-                        <div class="d-flex justify-content-start">
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                        </div>
-                    </div>
-                </form>
+            {% if page_obj.object_list %}
+            <h5 class="mb-3 text-body-secondary">Answers</h5>
             {% else %}
-                <div class="col-8">
-                    <div class="d-flex flex-column gap-2 mb-3">
-                        <div class="alert alert-warning" role="alert">
-                            You need to 
-                            <a href="{% get_login_url_with_continue %}" class="alert-link">log in</a>
-                            to answer this question.
-                        </div>
-                    </div>
-                </div>
+            <h5 class="mb-3 text-body-secondary">No answers yet</h5>
             {% endif %}
         </div>
     </div>
+
+    {% for answer in page_obj.object_list %}
+    {% include 'layouts/answer_card.html' %}
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="row">
+    <div class="col-1 d-flex justify-content-center">
+    </div>
+    <div class="col-8 mb-4">
+        {% include 'layouts/pagination.html' %}
+    </div>
+</div>
+{% endif %}
+
+<div class="d-flex flex-column gap-3 mb-5">
+    <div class="row">
+        <div class="col-1 d-flex justify-content-center flex-column">
+        </div>
+
+        {% if request.user.is_authenticated %}
+        <form method="POST" action="{% url 'question' question.id %}" id="answerform">
+            <div class="col-8">
+                <div class="d-flex flex-column gap-2 mb-3">
+                    <h6 class="mb-2 text-body-secondary">Your answer</h6>
+                    {% csrf_token %}
+                    {{ form.body }}
+                    {% for error in form.body.errors %}
+                    <div class="invalid-feedback error-message" id="passwordFeedback">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-start">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </form>
+        {% else %}
+        <div class="col-8">
+            <div class="d-flex flex-column gap-2 mb-3">
+                <div class="alert alert-warning" role="alert">
+                    You need to
+                    <a href="{% get_login_url_with_continue %}" class="alert-link">log in</a>
+                    to answer this question.
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+{% block counter %}
+<div id="counter">-</div>
 {% endblock %}
 
 {% block scripts %}

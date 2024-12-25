@@ -144,3 +144,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/login'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+CENTRIFUGO_API_KEY = "your_api_key"
+CENTRIFUGO_SECRET = "your_super_secret_key"
+CENTRIFUGO_WS_URL = "ws://localhost:8000/connection/websocket"
