@@ -13,10 +13,14 @@ from django.views.decorators.csrf import csrf_protect as ccrf_protect
 from django.utils import timezone
 from askme_fetisov.settings import MEDIA_URL
 from django.views.decorators.http import require_POST
-import os
-import jwt
-import time
+from cent import Client, PublishRequest
+import requests
 
+
+CENTRIFUGO_API_KEY = "your_api_key"
+CENTRIFUGO_SECRET = "your_super_secret_key"
+CENTRIFUGO_WS_URL = "ws://localhost:8000/connection/websocket"
+CENTRIFUGO_API_URL = "http://localhost:8000/api"
 
 def paginate(objects_list, request, per_page=8):
     page_number = int(request.GET.get('page', 1))
@@ -59,7 +63,6 @@ def index(request):
             'current_profile': profile,
         }
     )
-
 def hot(request):
     if (request.user.is_authenticated):
         profile = get_object_or_404(Profile, user=request.user)
@@ -139,7 +142,7 @@ def settings(request):
 
     return render(
         request,
-        template_name="settings.html",
+        template_name="html",
         context={
             'popular_tags': popular_tags,
             'top_users': top_users,
@@ -148,6 +151,14 @@ def settings(request):
             'profile_form': profile_form,
         }
     )
+
+
+def render_new_answer(request, answer_id):
+    if request.method == 'GET':
+        answer = get_object_or_404(Answer, id=answer_id)
+        context = {'answer': answer}
+        html = render(request, 'layouts/answer_card.html', context).content.decode('utf-8')
+        return JsonResponse({'html': html})
 
 def question(request, question_id):
     if (request.user.is_authenticated):
@@ -171,6 +182,11 @@ def question(request, question_id):
         form = AnswerForm(request.POST)
         if (form.is_valid()):
             new_answer_id = form.save(profile, question_id)
+
+            client = Client(CENTRIFUGO_API_URL, CENTRIFUGO_API_KEY)
+            request = PublishRequest(channel=str(question_id), data={"answer": form.cleaned_data['body'], 'answer_id': new_answer_id})
+            result = client.publish(request)
+
             page_number = (Answer.objects.filter(question_id=question_id).count() + 7-1 ) //7
             return redirect(reverse('question', args=[question_id]) + f"?page={page_number}#answer-{new_answer_id}")
 

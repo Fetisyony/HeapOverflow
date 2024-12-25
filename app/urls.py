@@ -16,6 +16,7 @@ urlpatterns = [
     path('<int:answer_id>/vote_answer', views.vote_answer, name='vote_answer'),
     path('<int:question_id>/vote_question', views.vote_question, name='vote_question'),
     path('<int:answer_id>/set_correct', views.tick_correct, name='tick_correct'),
+    path('render-answer/<int:answer_id>/', views.render_new_answer, name='render_new_answer'),
 ]
 
 if settings.DEBUG:

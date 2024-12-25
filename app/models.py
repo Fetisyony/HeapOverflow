@@ -16,7 +16,7 @@ class QuestionManager(models.Manager):
 
 class AnswerManager(models.Manager):
     def get_answers_by_question_id(self, question_id):
-        return self.filter(question_id=question_id).annotate(votes_count_tech=Coalesce(Sum('votes__vote_type'), 0)).order_by('-is_accepted', '-created_at')
+        return self.filter(question_id=question_id).annotate(votes_count_tech=Coalesce(Sum('votes__vote_type'), 0)).order_by('-is_accepted', 'created_at')
 
 class ProfileManager(models.Manager):
     def get_top_n_users_by_number_of_answers(self, n):

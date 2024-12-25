@@ -58,7 +58,7 @@ AskPumpkin: {{ question.title }}
 </div>
 <hr class="my-4">
 
-<div class="d-flex flex-column gap-3 cards_width mb-5">
+<div class="d-flex flex-column gap-3 cards_width mb-5 answers-container">
     <div class="row">
         <div class="col-1 d-flex justify-content-center">
         </div>
@@ -72,7 +72,7 @@ AskPumpkin: {{ question.title }}
     </div>
 
     {% for answer in page_obj.object_list %}
-    {% include 'layouts/answer_card.html' %}
+        {% include 'layouts/answer_card.html' %}
     {% endfor %}
 </div>
 
@@ -130,7 +130,55 @@ AskPumpkin: {{ question.title }}
 <div id="counter">-</div>
 {% endblock %}
 
-{% block scripts %}
-<script src="{% static 'js/vote.js' %}"></script>
+{% block scripts %}<script src="{% static 'js/vote.js' %}"></script>
 <script src="{% static 'js/select_correct.js' %}"></script>
+<script src="https://unpkg.com/centrifuge@5.0.1/dist/centrifuge.js"></script>
+<script type="text/javascript">
+    const centrifuge = new Centrifuge("{{ ws_url }}", {
+        token: "{{ token }}"
+    });
+
+    centrifuge.on('connecting', function (ctx) {
+        console.log(`connecting: ${ctx.code}, ${ctx.reason}`);
+    }).on('connected', function (ctx) {
+        console.log(`connected over ${ctx.transport}`);
+    }).on('disconnected', function (ctx) {
+        console.log(`disconnected: ${ctx.code}, ${ctx.reason}`);
+    }).connect();
+
+    const sub = centrifuge.newSubscription("{{ question.id }}");
+
+    sub.on('publication', function (ctx) {
+        const items = document.querySelectorAll('.answer-card-cls');
+        console.log(items);
+        const newAnswer = ctx.data.answer;
+        const url = `/render-answer/${ctx.data.answer_id}/`;
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch new answer');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.html) {
+                    const answersContainer = document.querySelector('.answers-container');
+                    if (answersContainer) {
+                        answersContainer.insertAdjacentHTML('beforeend', data.html);
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+
+
+
+    }).on('subscribing', function (ctx) {
+        console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
+    }).on('subscribed', function (ctx) {
+        console.log('subscribed', ctx);
+    }).on('unsubscribed', function (ctx) {
+        console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
+    }).subscribe();
+</script>
 {% endblock %}
