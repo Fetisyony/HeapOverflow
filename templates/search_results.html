@@ -1,0 +1,21 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block tab_title %}
+    AskPumpkin: {{ query }}
+{% endblock %}
+
+{% block page_content_title %}
+    Search: {{ query }}
+{% endblock %}
+
+{% block content %}
+        <div class="d-flex flex-column gap-3 cards_width mb-4">
+            {% for question in questions %}
+                {% include 'layouts/question_card.html' %}
+            {% endfor %}
+        </div>
+
+        {% include 'layouts/pagination.html' %}
+
+{% endblock %}

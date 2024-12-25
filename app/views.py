@@ -1,26 +1,63 @@
 import json
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from .models import Question, Profile, Tag, Answer
-from django.db.models import Sum
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from .forms import AnswerForm, LoginForm, NewQuestionForm, ProfileEditFrom, RegisterForm, UserEditForm
-from django.views.decorators.csrf import csrf_protect as ccrf_protect
-from django.utils import timezone
-from askme_fetisov.settings import MEDIA_URL
 from django.views.decorators.http import require_POST
 from cent import Client, PublishRequest
-import requests
+from django.contrib.postgres.search import SearchQuery, SearchRank
+from .models import Question
+from django.db.models import F
 
 
 CENTRIFUGO_API_KEY = "your_api_key"
 CENTRIFUGO_SECRET = "your_super_secret_key"
 CENTRIFUGO_WS_URL = "ws://localhost:8000/connection/websocket"
 CENTRIFUGO_API_URL = "http://localhost:8000/api"
+
+
+def search(request):
+    query = request.GET.get('q')
+    print("AAAAAAAAAAAAAAAAAA")
+    if query:
+        search_query = SearchQuery(query)
+        search_results = Question.objects.annotate(
+            rank=SearchRank(F('search_vector'), search_query)
+        ).filter(rank__gte=0.1).order_by('-rank')
+    else:
+        search_results = Question.objects.none()
+    
+    page, page_number = paginate(search_results, request, per_page=10)
+    if (page is None):
+        return redirect(f"/?page={page_number}")
+
+    return render(
+        request,
+        template_name="search_results.html",
+        context={
+            'page_obj': page,
+            'questions': page.object_list,
+
+            'query': query,
+        }
+    )
+
+def search_suggestions(request):
+    NUMBER_OF_SUGGESTIONS = 10
+    query = request.GET.get('q')
+    if query:
+        search_results = Question.objects.filter(
+            search_vector=query
+        )[:NUMBER_OF_SUGGESTIONS]
+        suggestions = [{'title': q.title, 'content': q.body[:100], 'id': q.id} for q in search_results]
+    else:
+        suggestions = []
+    return JsonResponse(suggestions, safe=False)
 
 def paginate(objects_list, request, per_page=8):
     page_number = int(request.GET.get('page', 1))
@@ -44,9 +81,6 @@ def index(request):
 
     questions = Question.objects.order_by('-created_at')
 
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
-
     page, page_number = paginate(questions, request, per_page=10)
     if (page is None):
         return redirect(f"/?page={page_number}")
@@ -58,11 +92,10 @@ def index(request):
             'page_obj': page,
             'questions': page.object_list,
 
-            'popular_tags': popular_tags,
-            'top_users': top_users,
             'current_profile': profile,
         }
     )
+
 def hot(request):
     if (request.user.is_authenticated):
         profile = get_object_or_404(Profile, user=request.user)
@@ -70,8 +103,6 @@ def hot(request):
         profile = None
 
     hot_questions = Question.objects.get_hot_questions()
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
     page, page_number = paginate(hot_questions, request, per_page=10)
     if (page is None):
@@ -84,8 +115,6 @@ def hot(request):
             'page_obj': page,
             'questions': page.object_list,
 
-            'popular_tags': popular_tags,
-            'top_users': top_users,
             'current_profile': profile
         }
     )
@@ -97,8 +126,6 @@ def tag(request, tag_name):
         profile = None
 
     questions = Question.objects.get_questions_by_tag_name(tag_name)
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
     page, page_number = paginate(questions, request, per_page=10)
     if (page is None):
@@ -113,8 +140,6 @@ def tag(request, tag_name):
 
             'tag_name': tag_name,
 
-            'popular_tags': popular_tags,
-            'top_users': top_users,
             'current_profile': profile
         }
     )
@@ -122,8 +147,6 @@ def tag(request, tag_name):
 @login_required
 def settings(request):
     profile = get_object_or_404(Profile, user=request.user)
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
     if (request.method == 'POST'):
         user_form = UserEditForm(request.POST, instance=request.user, user=request.user)
@@ -134,7 +157,6 @@ def settings(request):
             profile_form.save()
             return redirect(reverse("settings"))
         else:
-            print("error")
             print(user_form["username"].errors)
     else:
         user_form = UserEditForm(instance=request.user, user=request.user)
@@ -142,10 +164,8 @@ def settings(request):
 
     return render(
         request,
-        template_name="html",
+        template_name="settings.html",
         context={
-            'popular_tags': popular_tags,
-            'top_users': top_users,
             'current_profile': profile,
             'user_form': user_form,
             'profile_form': profile_form,
@@ -168,9 +188,6 @@ def question(request, question_id):
 
     if (question_id <= 0) or (not Question.objects.filter(id=question_id).exists()):
         return question_not_found(request)
-
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
     answers = Answer.objects.get_answers_by_question_id(question_id)
 
@@ -207,8 +224,6 @@ def question(request, question_id):
             'question': Question.objects
                 .get_question_by_id(question_id),
             'page_obj': page,
-            'popular_tags': popular_tags,
-            'top_users': top_users,
             'current_profile': profile,
             'form': form,
             'is_author': current_user_is_author,
@@ -221,16 +236,11 @@ def question_not_found(request):
     else:
         profile = None
 
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
-
     return render(
             request,
             'question_not_found.html',
             status=404,
             context={
-                'popular_tags': popular_tags,
-                'top_users': top_users,
                 'current_profile': profile,
             }
         )
@@ -238,8 +248,6 @@ def question_not_found(request):
 @login_required
 def ask_question(request):
     profile = get_object_or_404(Profile, user=request.user)
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
     if (request.method == 'POST'):
         form = NewQuestionForm(request.POST)
@@ -253,8 +261,6 @@ def ask_question(request):
         request,
         template_name="ask.html",
         context={
-            'popular_tags': popular_tags,
-            'top_users': top_users,
             'form': form,
             'current_profile': profile,
         }
@@ -263,9 +269,6 @@ def ask_question(request):
 def register(request):
     if request.user.is_authenticated:
         return redirect(reverse('index'))
-
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
     if (request.method == 'POST'):
         form = RegisterForm(request.POST, request.FILES)
@@ -288,8 +291,6 @@ def register(request):
         request,
         template_name="register.html",
         context={
-            'popular_tags': popular_tags,
-            'top_users': top_users,
             'form': form,
         }
     )
@@ -301,9 +302,6 @@ def login(request):
 
     if request.user.is_authenticated:
         return redirect(reverse('index'))
-
-    popular_tags = Tag.objects.get_popular_n_tags()
-    top_users = Profile.objects.get_top_n_users_by_number_of_answers(5)
 
     if (request.method == 'POST'):
         form = LoginForm(request.POST)
@@ -326,8 +324,6 @@ def login(request):
         request,
         template_name="login.html",
         context={
-            'popular_tags': popular_tags,
-            'top_users': top_users,
             'form': form,
             'continue': redirect_to,
         }

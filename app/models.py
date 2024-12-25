@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
+from datetime import timedelta
+from django.contrib.postgres.search import SearchVectorField, SearchVector
+from django.db.models import Index
 
 
 class QuestionManager(models.Manager):
@@ -20,11 +23,25 @@ class AnswerManager(models.Manager):
 
 class ProfileManager(models.Manager):
     def get_top_n_users_by_number_of_answers(self, n):
-        return self.annotate(answers_count=models.Count('answers')).order_by('-answers_count')[:n]
+        # это 10 пользователей задавших самые популярные вопросы или давших самые популярные ответы за последнюю неделю
+        time_threshold = models.functions.Now() - timedelta(days=7)
+        return self.annotate(
+            answers_count=models.Count(
+                    'answers',
+                    filter=models.Q(answers__created_at__gte=time_threshold)
+                ) + models.Count(
+                    'questions',
+                    filter=models.Q(questions__created_at__gte=time_threshold))
+                ).order_by('-answers_count')[:n]
 
 class TagManager(models.Manager):
-    def get_popular_n_tags(self, n=5):
-        return self.annotate(questions_count=models.Count('questions')).order_by('-questions_count')[:n]
+    def get_popular_n_tags(self, n=10):
+        time_threshold = models.functions.Now() - timedelta(days=90)
+        return self.annotate(
+            questions_count=models.Count(
+                                            'questions',
+                                            filter=models.Q(questions__created_at__gte=time_threshold))
+                                        ).order_by('-questions_count')[:n]
 
 
 class Profile(models.Model):
@@ -50,7 +67,14 @@ class Question(models.Model):
     tags = models.ManyToManyField(Tag, through='QuestionTag', related_name='questions')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    search_vector = SearchVectorField(null=True)
+
     objects = QuestionManager()
+
+    class Meta:
+        indexes = [
+            Index(fields=['search_vector'], name='search_vector_idx')
+        ]
 
     def votes_count(self):
         return self.votes.aggregate(votes_count=Sum('vote_type'))['votes_count'] or 0
@@ -81,7 +105,7 @@ class QuestionVote(models.Model):
 
     class Meta:
         unique_together = ('question', 'user')
-    
+
     def __str__(self):
         return f"{self.question} - {self.user} - {self.vote_type}"
 
@@ -93,7 +117,7 @@ class AnswerVote(models.Model):
 
     class Meta:
         unique_together = ('answer', 'user')
-    
+
     def __str__(self):
         return f"{self.answer} - {self.user} - {self.vote_type}"
 
@@ -103,6 +127,6 @@ class QuestionTag(models.Model):
 
     class Meta:
         unique_together = ('question', 'tag') # to prevent duplicate tags
-    
+
     def __str__(self):
         return f"({self.question.title} -- {self.tag.name})"

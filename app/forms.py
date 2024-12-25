@@ -2,6 +2,7 @@ from django import forms
 from .models import Answer, Profile, Question, Tag
 from django.contrib.auth.models import User
 from .management.commands.fill_db import pull_of_tags
+from django.contrib.postgres.search import SearchVector
 
 
 class LoginForm(forms.Form):
@@ -274,6 +275,11 @@ class NewQuestionForm(forms.ModelForm):
     def save(self, profile):
         question = super().save(commit=False)
         question.user = profile
+        search_vector = (
+            SearchVector('title', weight='A') +
+            SearchVector('body', weight='B')
+        )
+        question.search_vector = search_vector
         question.save()
         question.tags.set(self.cleaned_data.get('tags_input', []))
 

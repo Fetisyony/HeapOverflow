@@ -38,3 +38,26 @@
     background-color: #eaebed;
     transition: background-color 0.3s ease;
 }
+
+.suggestions-list {
+    position: absolute;
+    top: 100%; /* Position right below the input */
+    /* center */
+    left: 35%;
+    z-index: 1000;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    max-height: 200px; /* Optional: limit height and enable scrolling */
+    width: 30%;
+    overflow-y: auto;
+}
+.suggestions-list li {
+    padding: 8px;
+    cursor: pointer;
+}
+.suggestions-list li:hover {
+    background-color: #f0f0f0;
+}
